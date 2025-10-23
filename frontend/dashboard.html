@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetroControl | Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="auth.js"></script>
+<script src="api.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-gas-pump"></i>
+                <h2>PetroControl</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active">
+                        <a href="dashboard.html">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Panel</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="registro.html">
+                            <i class="fas fa-clipboard-list"></i>
+                            <span>Registro E/S</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="inventario.html">
+                            <i class="fas fa-warehouse"></i>
+                            <span>Inventario</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="camiones.html">
+                            <i class="fas fa-truck"></i>
+                            <span>Camiones</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="mantenimiento.html">
+                            <i class="fas fa-tools"></i>
+                            <span>Mantenimiento</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="camioneros.html">
+                            <i class="fas fa-users"></i>
+                            <span>Camioneros</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Cerrar Sesión</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="main-header">
+                <h1>Panel de Control</h1>
+                <div class="user-info">
+                    <span id="user-name">Cargando...</span>
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+
+            <div class="content-box">
+                <h2>Bienvenido al Sistema PetroControl</h2>
+                <p>Sistema de gestión de flota de camiones y control de combustible.</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fas fa-truck"></i>
+                        <div>
+                            <h3>Camiones Activos</h3>
+                            <p id="camiones-activos">-</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-gas-pump"></i>
+                        <div>
+                            <h3>Registros Hoy</h3>
+                            <p id="registros-hoy">-</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-chart-line"></i>
+                        <div>
+                            <h3>Total Combustible</h3>
+                            <p id="total-combustible">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <h3>Acciones Rápidas</h3>
+                    <div class="action-buttons">
+                        <a href="registro.html" class="btn-action">
+                            <i class="fas fa-plus"></i>
+                            Nuevo Registro
+                        </a>
+                        <a href="inventario.html" class="btn-action">
+                            <i class="fas fa-eye"></i>
+                            Ver Inventario
+                        </a>
+                        <a href="camiones.html" class="btn-action">
+                            <i class="fas fa-truck"></i>
+                            Gestionar Camiones
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Dashboard cargado');
+            
+            const token = localStorage.getItem("token");
+            console.log('🔑 Token encontrado:', token ? 'Sí' : 'No');
+            
+            if (!token) {
+                console.log('❌ No hay token, redirigiendo al login');
+                alert("No estás autenticado. Redirigiendo al login...");
+                window.location.href = "index.html";
+                return;
+            }
+            
+            console.log('✅ Token válido, usuario autenticado');
+            
+            // Decodificar token para obtener info del usuario
+            try {
+                const decoded = JSON.parse(atob(token));
+                console.log('👤 Usuario decodificado:', decoded);
+                
+                const userNameElement = document.getElementById('user-name');
+                if (userNameElement) {
+                    userNameElement.textContent = decoded.username || 'Usuario';
+                }
+            } catch (error) {
+                console.error('❌ Error decodificando token:', error);
+                localStorage.removeItem('token');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Cargar estadísticas básicas
+            loadStats();
+        });
+
+        function logout() {
+            console.log('🚪 Cerrando sesión');
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        }
+
+        async function loadStats() {
+            try {
+                const token = localStorage.getItem('token');
+                
+                // Cargar registros para estadísticas
+                const response = await fetch('http://localhost:3000/api/registros', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const registros = data.registros || [];
+                    
+                    // Actualizar estadísticas
+                    document.getElementById('registros-hoy').textContent = registros.length;
+                    
+                    const totalCombustible = registros.reduce((total, reg) => {
+                        return total + (parseFloat(reg.cantidad) || 0);
+                    }, 0);
+                    
+                    document.getElementById('total-combustible').textContent = totalCombustible.toFixed(2) + ' L';
+                }
+
+                // Cargar camiones para contador
+                const camionesResponse = await fetch('http://localhost:3000/api/camiones', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (camionesResponse.ok) {
+                    const camionesData = await camionesResponse.json();
+                    const camiones = camionesData.camiones || [];
+                    const camionesActivos = camiones.filter(c => c.estado === 'activo').length;
+                    document.getElementById('camiones-activos').textContent = camionesActivos;
+                }
+
+            } catch (error) {
+                console.error('Error cargando estadísticas:', error);
+            }
+        }
+    </script>
+</body>
+</html>

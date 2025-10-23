@@ -1,0 +1,17 @@
+{
+    "java.debug.settings.onBuildFailureProceed": true,
+    "sqltools.connections": [
+        {
+            "previewLimit": 30,
+            "server": "localhost",
+            "port": 5432,
+            "askForPassword": true,
+            "driver": "PostgreSQL",
+            "name": "PetroControl",
+            "group": "PostgreSQL",
+            "database": "petrocontrol_db",
+            "username": "tnn"
+        }
+    ],
+    "livePreview.defaultPreviewPath": "/Frontend/index.html"
+}
