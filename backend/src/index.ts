@@ -1,198 +1,271 @@
 import "reflect-metadata"
-import express from "express"
+import express, { type Request, type Response, type NextFunction } from "express"
 import cors from "cors"
-import compression from "compression"
-import morgan from "morgan"
 import helmet from "helmet"
-import rateLimit from "express-rate-limit"
-import path from "path"
+import compression from "compression"
 import dotenv from "dotenv"
-
 import { AppDataSource } from "./config/data-source"
-
-// Importar rutas
 import authRoutes from "./routes/authRoutes"
 import camionRoutes from "./routes/camionRoutes"
 import registroRoutes from "./routes/registroRoutes"
 import camioneroRoutes from "./routes/camioneroRoutes"
 import mantenimientoRoutes from "./routes/mantenimientoRoutes"
+import inventarioRoutes from "./routes/inventarioRoutes"
 
-// Cargar variables de entorno
+// ✅ Cargar variables de entorno
 dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 3000
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://127.0.0.1:5500"
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // máximo 100 requests por IP
-  message: {
-    error: "Demasiadas solicitudes desde esta IP, intenta de nuevo más tarde.",
-  },
-})
+// ═══════════════════════════════════════════════════════════════════
+// CONFIGURACIÓN DE CORS
+// ═══════════════════════════════════════════════════════════════════
 
-// Middlewares de seguridad
-app.use(
-  helmet({
-    contentSecurityPolicy: false, // Deshabilitado para desarrollo
-  }),
-)
-app.use(limiter)
-app.use(compression())
+const allowedOrigins = [
+  FRONTEND_URL,
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:5500",
+  "http://127.0.0.1:5500",
+  "http://localhost:8080",
+  "http://127.0.0.1:8080",
+  "http://localhost:3000",
+  "http://localhost:3001",
+]
 
-// Logging
-if (process.env.NODE_ENV === "production") {
-  app.use(morgan("combined"))
-} else {
-  app.use(morgan("dev"))
-}
-
-// CORS configurado para desarrollo y producción
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "http://127.0.0.1:3000",
-      "http://localhost:5173",
-      "http://127.0.0.1:5173",
-      "http://localhost:8080",
-      "http://127.0.0.1:8080",
-      "https://tu-frontend.vercel.app", // AGREGAR ESTA LÍNEA
-      process.env.FRONTEND_URL || "*",
-      // Railway te dará una URL como: https://tu-app.up.railway.app
-    ],
+    origin: (origin, callback) => {
+      // ✅ Permitir peticiones sin origen (Postman, curl, etc.)
+      if (!origin) return callback(null, true)
+
+      if (allowedOrigins.includes(origin)) {
+        console.log(`✅ [CORS] Origen permitido: ${origin}`)
+        callback(null, true)
+      } else {
+        console.log(`⚠️ [CORS] Origen no permitido: ${origin}`)
+        callback(new Error("Not allowed by CORS"))
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 )
 
-// Middlewares básicos
+// ═══════════════════════════════════════════════════════════════════
+// MIDDLEWARES GLOBALES
+// ═══════════════════════════════════════════════════════════════════
+
+app.use(helmet())
+app.use(compression)
 app.use(express.json({ limit: "10mb" }))
 app.use(express.urlencoded({ extended: true, limit: "10mb" }))
 
-// ENDPOINT TEMPORAL PARA SEED - ELIMINAR DESPUÉS
-app.post("/api/admin/seed", async (req, res) => {
-  const { secret } = req.body
+// ✅ Middleware de logging mejorado
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const start = Date.now()
 
-  if (secret !== "mi_clave_super_secreta_123") {
-    return res.status(403).json({ message: "Forbidden" })
-  }
+  console.log(`
+────────────────────────────────────────────────────────────
+📡 [${new Date().toISOString()}]
+   ${req.method.padEnd(7)} ${req.path}
+   IP: ${req.ip}
+   Origin: ${req.get("origin") || "N/A"}
+────────────────────────────────────────────────────────────`)
 
-  try {
-    // Importar y ejecutar el seed
-    const { seedDatabase } = require("../scripts/seed-database")
-    await seedDatabase()
+  res.on("finish", () => {
+    const duration = Date.now() - start
+    const statusEmoji = res.statusCode < 400 ? "✅" : "❌"
+    console.log(`${statusEmoji} [Response] Status: ${res.statusCode}`)
+    console.log(`────────────────────────────────────────────────────────────
+`)
+    console.log(`⏱️ [Performance] ${req.method} ${req.path} - ${duration}ms
+`)
+  })
 
-    res.json({ message: "Base de datos sembrada exitosamente" })
-  } catch (error) {
-    res.status(500).json({
-      message: "Error sembrando base de datos",
-      error: error.message,
-    })
-  }
-})
-
-// Servir archivos estáticos
-app.use(express.static(path.join(__dirname, "../frontend")))
-
-// Logging middleware para debugging
-app.use((req, res, next) => {
-  console.log(`📡 ${req.method} ${req.path} - Origin: ${req.get("Origin")}`)
   next()
 })
 
-// Rutas API
+// ═══════════════════════════════════════════════════════════════════
+// RUTA RAÍZ CON REDIRECCIÓN AL FRONTEND
+// ═══════════════════════════════════════════════════════════════════
+
+app.get("/", (req: Request, res: Response) => {
+  // Si la petición viene del navegador, redirigir al frontend
+  const userAgent = req.get("user-agent") || ""
+  if (userAgent.includes("Mozilla") || userAgent.includes("Chrome")) {
+    return res.redirect(FRONTEND_URL + "/index.html")
+  }
+
+  // Si es una petición de API, devolver JSON
+  res.json({
+    success: true,
+    message: "PetroControl API v2.0",
+    version: "2.0.0",
+    status: "online",
+    timestamp: new Date().toISOString(),
+    database: AppDataSource.isInitialized ? "connected" : "disconnected",
+    frontendUrl: FRONTEND_URL + "/index.html",
+    endpoints: {
+      health: "/api/health",
+      test: "/api/test",
+      auth: "/api/auth",
+      camiones: "/api/camiones",
+      registros: "/api/registros",
+      camioneros: "/api/camioneros",
+      mantenimientos: "/api/mantenimientos",
+      inventario: "/api/inventario",
+    },
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════
+// RUTAS DE HEALTH CHECK
+// ═══════════════════════════════════════════════════════════════════
+
+app.get("/api/health", (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    status: "ok",
+    message: "API funcionando correctamente",
+    timestamp: new Date().toISOString(),
+    database: AppDataSource.isInitialized ? "connected" : "disconnected",
+  })
+})
+
+app.get("/api/test", (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    message: "Ruta de prueba funcionando",
+    timestamp: new Date().toISOString(),
+  })
+})
+
+// ═══════════════════════════════════════════════════════════════════
+// RUTAS DE LA API
+// ═══════════════════════════════════════════════════════════════════
+
 app.use("/api/auth", authRoutes)
 app.use("/api/camiones", camionRoutes)
 app.use("/api/registros", registroRoutes)
 app.use("/api/camioneros", camioneroRoutes)
 app.use("/api/mantenimientos", mantenimientoRoutes)
+app.use("/api/inventario", inventarioRoutes)
 
-// Health check - CORREGIDO
-app.get("/api/health", (req, res) => {
-  res.json({
-    status: "OK",
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: process.env.NODE_ENV || "development",
-    database: AppDataSource.isInitialized ? "connected" : "disconnected",
+// ═══════════════════════════════════════════════════════════════════
+// MANEJO DE ERRORES GLOBAL
+// ═══════════════════════════════════════════════════════════════════
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error(`
+============================================================
+❌ [Error Global]
+   Path: ${req.path}
+   Method: ${req.method}
+   Error: ${err.message}
+   Stack: ${err.stack}
+============================================================
+`)
+  res.status(500).json({
+    success: false,
+    message: "Error interno del servidor",
+    error: process.env.NODE_ENV === "development" ? err.message : undefined,
   })
 })
 
-// Ruta para servir el frontend
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/index.html"))
-})
+// ═══════════════════════════════════════════════════════════════════
+// RUTA 404
+// ═══════════════════════════════════════════════════════════════════
 
-// Ruta de prueba
-app.get("/api/test", (req, res) => {
-  res.json({
-    message: "Backend funcionando correctamente",
-    timestamp: new Date(),
-    version: "2.0.0",
+app.use((req: Request, res: Response) => {
+  res.status(404).json({
+    success: false,
+    message: "Ruta no encontrada",
+    path: req.path,
   })
 })
 
-// Manejo de errores global
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error("❌ Error:", err)
+// ═══════════════════════════════════════════════════════════════════
+// INICIALIZAR SERVIDOR
+// ═══════════════════════════════════════════════════════════════════
 
-  if (process.env.NODE_ENV === "production") {
-    res.status(500).json({ message: "Error interno del servidor" })
-  } else {
-    res.status(500).json({
-      message: err.message,
-      stack: err.stack,
-    })
-  }
-})
-
-// Ruta 404 para API
-app.use("/api/*", (req, res) => {
-  res.status(404).json({ message: "Ruta no encontrada" })
-})
-
-// Servir SPA para todas las demás rutas
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/index.html"))
-})
-
-// Inicializar aplicación
 async function startServer() {
   try {
-    console.log("🔌 Conectando a la base de datos...")
-    await AppDataSource.initialize()
-    console.log("✅ Base de datos conectada exitosamente")
+    console.log(`
+======================================================================
+🚀 INICIANDO SERVIDOR PETROCONTROL
+======================================================================
 
+📦 Configuración:
+   • Entorno: ${process.env.NODE_ENV || "development"}
+   • Puerto: ${PORT}
+   • Frontend URL: ${FRONTEND_URL}
+`)
+
+    // ✅ Conectar a la base de datos
+    console.log("🔌 [Database] Iniciando conexión...")
+    console.log(`📊 [Database] Modo: ${process.env.NODE_ENV || "development"}`)
+    console.log(`🏠 [Database] Host: ${process.env.DB_HOST}:${process.env.DB_PORT}`)
+    console.log(`💾 [Database] Database: ${process.env.DB_DATABASE}`)
+
+    await AppDataSource.initialize()
+
+    console.log("✅ [Database] Conexión establecida exitosamente")
+    console.log(`📊 [Database] Pool: min=2, max=10`)
+    console.log(`📦 [Database] Entidades cargadas: ${AppDataSource.entityMetadatas.map((e) => e.name).join(", ")}`)
+
+    // ✅ Iniciar servidor
     app.listen(PORT, () => {
-      console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`)
-      console.log(`🌍 Entorno: ${process.env.NODE_ENV || "development"}`)
-      console.log(`🌐 Frontend disponible en: http://localhost:${PORT}`)
-      console.log(`📡 API disponible en: http://localhost:${PORT}/api`)
+      console.log(`
+======================================================================
+✅ SERVIDOR INICIADO CORRECTAMENTE
+======================================================================
+
+🌐 URLs disponibles:
+   • API Base: http://localhost:${PORT}
+   • Health Check: http://localhost:${PORT}/api/health
+   • API Test: http://localhost:${PORT}/api/test
+   • Frontend: ${FRONTEND_URL}/index.html
+
+🔐 Endpoints de Autenticación:
+   • POST   /api/auth/login
+   • POST   /api/auth/register
+   • GET    /api/auth/verify
+
+🚛 Endpoints de Recursos (protegidos):
+   • GET    /api/camiones
+   • GET    /api/registros
+   • GET    /api/registros/inventario
+   • GET    /api/camioneros
+   • GET    /api/mantenimientos
+   • GET    /api/inventario/completo
+   • GET    /api/inventario/alertas
+
+🔑 Seguridad:
+   • JWT Secret: ✓ Configurado
+   • CORS: Habilitado (${allowedOrigins.length} orígenes permitidos)
+   • Helmet: Habilitado
+   • Compression: Habilitado
+
+✅ Sistema listo para recibir peticiones
+======================================================================
+`)
     })
   } catch (error) {
-    console.error("❌ Error al inicializar:", error)
+    console.error(`
+❌ [Database] Error al conectar:`)
+    console.error(error)
+    console.error(`
+❌ No se pudo conectar a la base de datos
+   Verifica tu configuración en .env`)
     process.exit(1)
   }
 }
 
-// Manejo de señales para cierre graceful
-process.on("SIGTERM", async () => {
-  console.log("🛑 Recibida señal SIGTERM, cerrando servidor...")
-  if (AppDataSource.isInitialized) {
-    await AppDataSource.destroy()
-  }
-  process.exit(0)
-})
-
-process.on("SIGINT", async () => {
-  console.log("🛑 Recibida señal SIGINT, cerrando servidor...")
-  if (AppDataSource.isInitialized) {
-    await AppDataSource.destroy()
-  }
-  process.exit(0)
-})
-
+// ✅ Iniciar el servidor
 startServer()
+
+export default app

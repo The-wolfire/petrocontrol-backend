@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetroControl | Acceso al Sistema</title>
+    
+    <!-- ✅ AGREGAR FAVICON -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛽</text></svg>">
+    
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Agregar configuración de API dinámica -->
+    <script src="config.js"></script>
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>PetroControl</h1>
+                <p>Acceso al Sistema</p>
+            </div>
+
+            <!-- Pestañas de navegación -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </button>
+                <button class="auth-tab" data-tab="register">
+                    <i class="fas fa-user-plus"></i> Registrarse
+                </button>
+            </div>
+
+            <!-- Formulario de Login -->
+            <div id="login-form-container" class="auth-form active">
+                <form id="login-form">
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="username" placeholder="Ingrese su usuario" required autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" placeholder="Ingrese su contraseña" required autocomplete="off">
+                    </div>
+                    <button type="submit" class="btn-primary" id="login-btn">
+                        <span class="btn-text">Iniciar Sesión</span>
+                        <i class="fas fa-spinner fa-spin" id="loading-spinner" style="display: none;"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Formulario de Registro -->
+            <div id="register-form-container" class="auth-form">
+                <form id="register-form">
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="reg-username" placeholder="Ingrese su usuario" required autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="reg-password" placeholder="Ingrese su contraseña" required autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="reg-confirm-password" placeholder="Ingrese su contraseña para la verificación" required autocomplete="off">
+                    </div>
+                    <div class="role-selector">
+                        <div class="role-option selected" data-role="operador">
+                            <i class="fas fa-user"></i>
+                            <div>Operador</div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary" id="register-btn">
+                        <span class="btn-text">Registrarse</span>
+                        <i class="fas fa-spinner fa-spin" id="register-loading" style="display: none;"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Sistema iniciado con API:', API_BASE_URL);
+            
+            const allInputs = document.querySelectorAll('input');
+            allInputs.forEach(input => {
+                input.value = '';
+                input.setAttribute('autocomplete', 'off');
+            });
+
+            const loginForm = document.getElementById('login-form');
+            const loginBtn = document.getElementById('login-btn');
+            const loadingSpinner = document.getElementById('loading-spinner');
+
+            function showMessage(type, message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message message-${type}`;
+                messageDiv.textContent = message;
+
+                const loginCard = document.querySelector('.login-card');
+                loginCard.insertBefore(messageDiv, loginCard.firstChild);
+
+                setTimeout(() => {
+                    messageDiv.remove();
+                }, 3000);
+            }
+
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const btnText = loginBtn.querySelector('.btn-text');
+
+                btnText.style.display = 'none';
+                loadingSpinner.style.display = 'inline-block';
+                loginBtn.disabled = true;
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || 'Error en el inicio de sesión');
+                    }
+
+                    const data = await response.json();
+                    localStorage.setItem('token', data.token);
+                    window.location.href = 'dashboard.html';
+
+                } catch (error) {
+                    console.error("Error en el inicio de sesión:", error);
+                    showMessage('error', error.message);
+                } finally {
+                    btnText.style.display = 'inline';
+                    loadingSpinner.style.display = 'none';
+                    loginBtn.disabled = false;
+                }
+            });
+
+            // Manejar cambio de pestañas
+            function switchTab(tabName) {
+                document.querySelectorAll('.auth-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+                
+                document.querySelectorAll('.auth-form').forEach(form => {
+                    form.classList.remove('active');
+                });
+                document.getElementById(`${tabName}-form-container`).classList.add('active');
+            }
+
+            function selectRole(role) {
+                document.querySelectorAll('.role-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                document.querySelector(`[data-role="${role}"]`).classList.add('selected');
+            }
+
+            async function registerUser(userData) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(userData)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.text();
+                        throw new Error(errorData || 'Error en el registro');
+                    }
+
+                    const data = await response.json();
+                    return data;
+                } catch (error) {
+                    throw error;
+                }
+            }
+
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    switchTab(tabName);
+                });
+            });
+
+            document.querySelectorAll('.role-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const role = this.getAttribute('data-role');
+                    selectRole(role);
+                });
+            });
+
+            document.getElementById('register-form').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('reg-username').value.trim();
+                const password = document.getElementById('reg-password').value;
+                const confirmPassword = document.getElementById('reg-confirm-password').value;
+                const selectedRole = document.querySelector('.role-option.selected').getAttribute('data-role');
+                
+                const registerBtn = document.getElementById('register-btn');
+                const btnText = registerBtn.querySelector('.btn-text');
+                const spinner = document.getElementById('register-loading');
+
+                if (!username || !password || !confirmPassword) {
+                    showMessage('error', 'Por favor complete todos los campos');
+                    return;
+                }
+
+                if (username.length < 3) {
+                    showMessage('error', 'El nombre de usuario debe tener al menos 3 caracteres');
+                    return;
+                }
+
+                if (password.length < 4) {
+                    showMessage('error', 'La contraseña debe tener al menos 4 caracteres');
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    showMessage('error', 'Las contraseñas no coinciden');
+                    return;
+                }
+
+                btnText.style.display = 'none';
+                spinner.style.display = 'inline-block';
+                registerBtn.disabled = true;
+
+                try {
+                    await registerUser({
+                        username: username,
+                        password: password,
+                        role: selectedRole
+                    });
+
+                    showMessage('success', 'Usuario registrado exitosamente. Ahora puede iniciar sesión.');
+                    
+                    document.getElementById('register-form').reset();
+                    selectRole('operador');
+                    setTimeout(() => {
+                        switchTab('login');
+                    }, 2000);
+
+                } catch (error) {
+                    console.error("Error en registro:", error);
+                    showMessage('error', error.message || 'Error en el registro');
+                } finally {
+                    btnText.style.display = 'inline';
+                    spinner.style.display = 'none';
+                    registerBtn.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

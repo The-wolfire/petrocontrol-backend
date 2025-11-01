@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetroControl | Camiones</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Agregar configuración de API dinámica -->
+    <script src="config.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-gas-pump"></i>
+                <h2>PetroControl</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="dashboard.html">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Panel</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="registro.html">
+                            <i class="fas fa-clipboard-list"></i>
+                            <span>Registro E/S</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="inventario.html">
+                            <i class="fas fa-warehouse"></i>
+                            <span>Inventario</span>
+                        </a>
+                    </li>
+                    <li class="active">
+                        <a href="camiones.html">
+                            <i class="fas fa-truck"></i>
+                            <span>Camiones</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="mantenimiento.html">
+                            <i class="fas fa-tools"></i>
+                            <span>Mantenimiento</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="camioneros.html">
+                            <i class="fas fa-users"></i>
+                            <span>Camioneros</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Cerrar Sesión</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="main-header">
+                <h1>Gestión de Camiones</h1>
+                <div class="user-info">
+                    <span id="user-name">Cargando...</span>
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+
+            <div class="content-box">
+                <!-- Barra de acciones -->
+                <div class="actions-bar">
+                    <button id="add-camion-btn" class="btn-primary">
+                        <i class="fas fa-plus"></i> Nuevo Camión
+                    </button>
+                </div>
+
+                <!-- Estadísticas -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fas fa-truck"></i>
+                        <div>
+                            <h3>Total Camiones</h3>
+                            <p id="total-camiones">-</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-check-circle"></i>
+                        <div>
+                            <h3>Disponibles</h3>
+                            <p id="camiones-disponibles">-</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-road"></i>
+                        <div>
+                            <h3>En Ruta</h3>
+                            <p id="camiones-ruta">-</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-wrench"></i>
+                        <div>
+                            <h3>En Mantenimiento</h3>
+                            <p id="camiones-mantenimiento">-</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lista de camiones -->
+                <div class="camiones-section">
+                    <h3><i class="fas fa-list"></i> Lista de Camiones</h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID Camión</th>
+                                    <th>Marca</th>
+                                    <th>Modelo</th>
+                                    <th>Año</th>
+                                    <th>Placa</th>
+                                    <th>Capacidad</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="camiones-table-body">
+                                <tr>
+                                    <td colspan="8" style="text-align: center; padding: 20px; color: #666;">
+                                        <i class="fas fa-spinner fa-spin"></i> Cargando camiones...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar/editar camión -->
+    <div id="camion-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Nuevo Camión</h2>
+                <button class="close-modal" onclick="cerrarModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="camion-form">
+                    <input type="hidden" id="camion-id-edit">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="camion-id">
+                                <i class="fas fa-id-card"></i> ID del Camión:
+                            </label>
+                            <input type="text" id="camion-id" placeholder="Ej: C-001" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="placa">
+                                <i class="fas fa-id-badge"></i> Placa:
+                            </label>
+                            <input type="text" id="placa" placeholder="Ej: ABC-123" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="marca">
+                                <i class="fas fa-copyright"></i> Marca:
+                            </label>
+                            <input type="text" id="marca" placeholder="Ej: Volvo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="modelo">
+                                <i class="fas fa-truck"></i> Modelo:
+                            </label>
+                            <input type="text" id="modelo" placeholder="Ej: FH16" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="anio">
+                                <i class="fas fa-calendar"></i> Año:
+                            </label>
+                            <input type="number" id="anio" min="1990" max="2030" placeholder="2023" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="capacidad">
+                                <i class="fas fa-tachometer-alt"></i> Capacidad (L):
+                            </label>
+                            <input type="number" id="capacidad" min="1000" step="100" placeholder="40000" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="tipo-vehiculo">
+                            <i class="fas fa-truck-moving"></i> Tipo de Vehículo:
+                        </label>
+                        <select id="tipo-vehiculo" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="cisterna">Cisterna</option>
+                            <option value="tanquero">Tanquero</option>
+                            <option value="camion">Camión</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="observaciones">
+                            <i class="fas fa-comment"></i> Observaciones:
+                        </label>
+                        <textarea id="observaciones" placeholder="Observaciones adicionales" rows="3"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentCamionId = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Página de camiones cargada con API:', API_BASE_URL);
+            
+            if (!verificarAutenticacion()) {
+                return;
+            }
+
+            inicializarPagina();
+        });
+
+        function verificarAutenticacion() {
+            const token = localStorage.getItem("token");
+            
+            if (!token) {
+                console.warn('⚠️ No hay token, redirigiendo al login...');
+                setTimeout(() => {
+                    window.location.href = "index.html";
+                }, 100);
+                return false;
+            }
+            
+            try {
+                // Decodificar el token JWT manualmente
+                const payload = token.split('.')[1];
+                const decodedPayload = JSON.parse(atob(payload));
+                
+                // Verificar si el token ha expirado
+                const currentTime = Math.floor(Date.now() / 1000);
+                if (decodedPayload.exp && decodedPayload.exp < currentTime) {
+                    console.warn('⚠️ Token expirado, redirigiendo al login...');
+                    localStorage.removeItem('token');
+                    setTimeout(() => {
+                        window.location.href = "index.html";
+                    }, 100);
+                    return false;
+                }
+
+                // Actualizar nombre de usuario
+                const userNameElement = document.getElementById('user-name');
+                if (userNameElement) {
+                    userNameElement.textContent = decodedPayload.username || 'Usuario';
+                }
+
+                console.log('✅ Token válido:', decodedPayload.username);
+                return true;
+
+            } catch (error) {
+                console.error('❌ Error al verificar token:', error);
+                localStorage.removeItem('token');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 100);
+                return false;
+            }
+        }
+
+        function logout() {
+            console.log('🚪 Cerrando sesión...');
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        }
+
+        function inicializarPagina() {
+            cargarCamiones();
+            
+            document.getElementById('add-camion-btn').addEventListener('click', () => {
+                currentCamionId = null;
+                document.getElementById('modal-title').textContent = 'Nuevo Camión';
+                abrirModal();
+            });
+            
+            document.getElementById('camion-form').addEventListener('submit', guardarCamion);
+        }
+
+        async function cargarCamiones() {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await fetch(`${API_BASE_URL}/camiones`, {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.status === 401) {
+                    console.warn('⚠️ No autorizado, redirigiendo al login...');
+                    localStorage.removeItem('token');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const camiones = data.camiones || [];
+                
+                mostrarCamiones(camiones);
+                actualizarEstadisticas(camiones);
+
+            } catch (error) {
+                console.error('❌ Error al cargar camiones:', error);
+                mostrarError('Error al cargar camiones: ' + error.message);
+            }
+        }
+
+        function mostrarCamiones(camiones) {
+            const tbody = document.getElementById('camiones-table-body');
+            
+            if (camiones.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 20px; color: #666;">
+                            📋 No hay camiones registrados
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = camiones.map(camion => {
+                const estadoClass = {
+                    'disponible': 'badge-success',
+                    'en_ruta': 'badge-warning',
+                    'mantenimiento': 'badge-error',
+                    'fuera_servicio': 'badge-info'
+                }[camion.estado] || 'badge-info';
+
+                const estadoIcon = {
+                    'disponible': 'fas fa-check-circle',
+                    'en_ruta': 'fas fa-road',
+                    'mantenimiento': 'fas fa-wrench',
+                    'fuera_servicio': 'fas fa-times-circle'
+                }[camion.estado] || 'fas fa-info-circle';
+
+                return `
+                    <tr>
+                        <td><strong>${camion.camionId}</strong></td>
+                        <td>${camion.marca}</td>
+                        <td>${camion.modelo}</td>
+                        <td>${camion.anio}</td>
+                        <td>${camion.placa || 'N/A'}</td>
+                        <td><strong>${camion.capacidad} L</strong></td>
+                        <td>
+                            <span class="badge ${estadoClass}">
+                                <i class="${estadoIcon}"></i> ${camion.estado}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn-small btn-warning" onclick="editarCamion(${camion.id})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-small btn-danger" onclick="eliminarCamion(${camion.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function actualizarEstadisticas(camiones) {
+            const total = camiones.length;
+            const disponibles = camiones.filter(c => c.estado === 'disponible').length;
+            const enRuta = camiones.filter(c => c.estado === 'en_ruta').length;
+            const mantenimiento = camiones.filter(c => c.estado === 'mantenimiento').length;
+
+            document.getElementById('total-camiones').textContent = total;
+            document.getElementById('camiones-disponibles').textContent = disponibles;
+            document.getElementById('camiones-ruta').textContent = enRuta;
+            document.getElementById('camiones-mantenimiento').textContent = mantenimiento;
+        }
+
+        function abrirModal() {
+            document.getElementById('camion-modal').style.display = 'flex';
+        }
+
+        function cerrarModal() {
+            document.getElementById('camion-modal').style.display = 'none';
+            document.getElementById('camion-form').reset();
+            currentCamionId = null;
+        }
+
+        async function guardarCamion(event) {
+            event.preventDefault();
+            
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+            submitBtn.disabled = true;
+
+            try {
+                const token = localStorage.getItem("token");
+                const data = {
+                    camionId: document.getElementById('camion-id').value.trim(),
+                    placa: document.getElementById('placa').value.trim(),
+                    marca: document.getElementById('marca').value.trim(),
+                    modelo: document.getElementById('modelo').value.trim(),
+                    anio: parseInt(document.getElementById('anio').value),
+                    capacidad: parseFloat(document.getElementById('capacidad').value),
+                    tipoVehiculo: document.getElementById('tipo-vehiculo').value,
+                    observaciones: document.getElementById('observaciones').value.trim()
+                };
+
+                const url = currentCamionId 
+                    ? `${API_BASE_URL}/camiones/${currentCamionId}`
+                    : `${API_BASE_URL}/camiones`;
+                
+                const method = currentCamionId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Error ${response.status}`);
+                }
+
+                cerrarModal();
+                await cargarCamiones();
+                showMessage('✅ Camión guardado exitosamente', 'success');
+
+            } catch (error) {
+                console.error('❌ Error al guardar camión:', error);
+                showMessage('❌ Error: ' + error.message, 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function editarCamion(id) {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await fetch(`${API_BASE_URL}/camiones/${id}`, {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                if (!response.ok) throw new Error(`Error ${response.status}`);
+
+                const data = await response.json();
+                const camion = data.camion;
+
+                currentCamionId = id;
+                document.getElementById('modal-title').textContent = 'Editar Camión';
+                document.getElementById('camion-id').value = camion.camionId;
+                document.getElementById('placa').value = camion.placa || '';
+                document.getElementById('marca').value = camion.marca;
+                document.getElementById('modelo').value = camion.modelo;
+                document.getElementById('anio').value = camion.anio;
+                document.getElementById('capacidad').value = camion.capacidad;
+                document.getElementById('tipo-vehiculo').value = camion.tipoVehiculo || '';
+                document.getElementById('observaciones').value = camion.observaciones || '';
+
+                abrirModal();
+
+            } catch (error) {
+                console.error('❌ Error al cargar camión:', error);
+                showMessage('❌ Error: ' + error.message, 'error');
+            }
+        }
+
+        async function eliminarCamion(id) {
+            if (!confirm('¿Está seguro de que desea eliminar este camión?')) {
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem("token");
+                const response = await fetch(`${API_BASE_URL}/camiones/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Error ${response.status}`);
+                }
+
+                await cargarCamiones();
+                showMessage('✅ Camión eliminado exitosamente', 'success');
+
+            } catch (error) {
+                console.error('❌ Error al eliminar camión:', error);
+                showMessage('❌ Error: ' + error.message, 'error');
+            }
+        }
+
+        function mostrarError(mensaje) {
+            const tbody = document.getElementById('camiones-table-body');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 20px; color: red;">
+                        ❌ ${mensaje}
+                    </td>
+                </tr>
+            `;
+        }
+
+        function showMessage(message, type = "info") {
+            const existingMessages = document.querySelectorAll(".floating-message");
+            existingMessages.forEach((msg) => msg.remove());
+
+            const messageDiv = document.createElement("div");
+            messageDiv.className = `floating-message message-${type}`;
+            messageDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">×</button>
+                </div>
+            `;
+
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 12px;
+                color: white;
+                font-weight: 500;
+                z-index: 1000;
+                max-width: 400px;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+                animation: slideIn 0.3s ease-out;
+            `;
+
+            if (type === "success") {
+                messageDiv.style.backgroundColor = "#4caf50";
+            } else if (type === "error") {
+                messageDiv.style.backgroundColor = "#f44336";
+            } else {
+                messageDiv.style.backgroundColor = "#2196f3";
+            }
+
+            document.body.appendChild(messageDiv);
+
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.style.animation = "slideIn 0.3s ease-out reverse";
+                    setTimeout(() => {
+                        if (messageDiv.parentNode) {
+                            messageDiv.parentNode.removeChild(messageDiv);
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
+    </script>
+
+    <style>
+        .camiones-section {
+            margin-top: 30px;
+        }
+        
+        .camiones-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .actions-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-success { 
+            background-color: #4caf50; 
+            color: white; 
+        }
+
+        .badge-warning { 
+            background-color: #ff9800; 
+            color: white; 
+        }
+
+        .badge-error { 
+            background-color: #f44336; 
+            color: white; 
+        }
+
+        .badge-info { 
+            background-color: #2196f3; 
+            color: white; 
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            margin: 2px;
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: #ff9800;
+        }
+
+        .btn-warning:hover {
+            background-color: #f57c00;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                max-height: 95vh;
+            }
+            
+            .modal {
+                padding: 10px;
+            }
+        }
+    </style>
+</body>
+</html>

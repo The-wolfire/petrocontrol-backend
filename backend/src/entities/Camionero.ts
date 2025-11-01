@@ -1,63 +1,73 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn } from "typeorm"
-import { Camion } from "./Camion"
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm"
 import { Viaje } from "./Viaje"
 
-@Entity("camioneros")
+@Entity("camionero")
 export class Camionero {
   @PrimaryGeneratedColumn()
-  id: number
+  id!: number
 
-  @Column({ type: "varchar", length: 100 })
-  nombre: string
+  @Column()
+  nombre!: string
 
-  @Column({ type: "varchar", length: 100 })
-  apellido: string
+  @Column()
+  apellido!: string
 
-  @Column({ type: "varchar", length: 20, unique: true })
-  cedula: string
+  @Column({ unique: true })
+  cedula!: string
 
-  @Column({ type: "varchar", length: 50, unique: true })
-  licencia: string
+  @Column()
+  licencia!: string
 
-  @Column({ type: "varchar", length: 20 })
-  telefono: string
+  @Column()
+  telefono!: string
 
-  @Column({ type: "varchar", length: 100, unique: true })
-  email: string
-
-  @Column({ type: "date" })
-  fechaNacimiento: Date
+  @Column({ nullable: true })
+  email!: string | null
 
   @Column({ type: "date" })
-  fechaVencimientoLicencia: Date
+  fechaNacimiento!: Date
 
-  @Column({ type: "varchar", length: 20, default: "activo" })
-  estado: string
+  @Column({ type: "date", default: () => "CURRENT_DATE" })
+  fechaIngreso!: Date
 
-  @Column({ type: "int", default: 0 })
-  horasConducidas: number
+  @Column({ type: "date", nullable: true })
+  fechaVencimientoLicencia!: Date | null
 
-  @Column({ type: "boolean", default: false })
-  enDescanso: boolean
+  @Column({ default: "activo" })
+  estado!: string
 
-  @Column({ type: "text", nullable: true })
-  observaciones: string
+  @Column({ default: 0 })
+  horasConducidas!: number
 
-  @OneToMany(
-    () => Camion,
-    (camion) => camion.camionero,
-  )
-  camiones: Camion[]
+  @Column({ default: false })
+  enDescanso!: boolean
 
+  @Column({ nullable: true, type: "text" })
+  observaciones!: string | null
+
+  // ✅ Relación con Viajes
   @OneToMany(
     () => Viaje,
     (viaje) => viaje.camionero,
   )
-  viajes: Viaje[]
+  viajes!: Viaje[]
 
   @CreateDateColumn()
-  fechaCreacion: Date
+  fechaCreacion!: Date
 
   @UpdateDateColumn()
-  fechaActualizacion: Date
+  fechaActualizacion!: Date
+
+  // ✅ Métodos útiles
+  obtenerUltimoViaje(): Date | null {
+    if (!this.viajes || this.viajes.length === 0) return null
+    const viajesOrdenados = this.viajes.sort(
+      (a, b) => new Date(b.fechaSalida).getTime() - new Date(a.fechaSalida).getTime(),
+    )
+    return viajesOrdenados[0].fechaSalida
+  }
+
+  estaDisponible(): boolean {
+    return this.estado === "activo" && !this.enDescanso
+  }
 }

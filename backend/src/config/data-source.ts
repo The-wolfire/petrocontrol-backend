@@ -1,3 +1,4 @@
+import "reflect-metadata"
 import { DataSource } from "typeorm"
 import dotenv from "dotenv"
 import { Usuario } from "../entities/Usuario"
@@ -9,36 +10,27 @@ import { Viaje } from "../entities/Viaje"
 
 dotenv.config()
 
-// Configuración para Railway/Render
+const isProduction = process.env.NODE_ENV === "production"
+
 export const AppDataSource = new DataSource({
   type: "postgres",
-
-  // En producción, usar DATABASE_URL
-  ...(process.env.DATABASE_URL
-    ? { url: process.env.DATABASE_URL }
-    : {
-        host: process.env.DB_HOST || "localhost",
-        port: Number.parseInt(process.env.DB_PORT || "5432"),
-        username: process.env.DB_USERNAME || "tnn",
-        password: process.env.DB_PASSWORD || "1234",
-        database: process.env.DB_DATABASE || "petrocontrol_db",
-      }),
-
-  // SSL para producción
-  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
-
-  // Solo sincronizar en desarrollo
-  synchronize: process.env.NODE_ENV !== "production",
-  logging: process.env.NODE_ENV === "development",
-
+  // Para producción en Vercel, usa DATABASE_URL
+  url: isProduction ? process.env.DATABASE_URL : undefined,
+  // Para desarrollo local, usa las variables individuales
+  host: !isProduction ? process.env.DB_HOST : undefined,
+  port: !isProduction ? parseInt(process.env.DB_PORT || "5432") : undefined,
+  username: !isProduction ? process.env.DB_USERNAME : undefined,
+  password: !isProduction ? process.env.DB_PASSWORD : undefined,
+  database: !isProduction ? process.env.DB_NAME : undefined,
+  
+  synchronize: !isProduction, // Solo en desarrollo
+  logging: !isProduction,
   entities: [Usuario, Camion, RegistroES, Camionero, Mantenimiento, Viaje],
-  migrations: ["dist/migrations/*.js"],
-
-  // Pool de conexiones optimizado para Railway
+  migrations: ["src/migrations/*.ts"],
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
   extra: {
-    max: 10,
-    min: 2,
-    acquire: 30000,
-    idle: 10000,
-  },
+    connectionLimit: 5,
+    acquireTimeout: 60000,
+    timeout: 60000,
+  }
 })

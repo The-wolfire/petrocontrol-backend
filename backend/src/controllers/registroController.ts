@@ -6,12 +6,14 @@ import { Camion } from "../entities/Camion"
 const registroRepository = AppDataSource.getRepository(RegistroES)
 const camionRepository = AppDataSource.getRepository(Camion)
 
+// ✅ GET Registros
 export const getRegistros = async (req: Request, res: Response) => {
   try {
-    console.log("🔍 Obteniendo registros...")
+    console.log("📋 [Registros] GET /api/registros")
 
     if (!AppDataSource.isInitialized) {
       return res.status(500).json({
+        success: false,
         message: "Base de datos no disponible",
       })
     }
@@ -21,26 +23,29 @@ export const getRegistros = async (req: Request, res: Response) => {
       order: { fechaCreacion: "DESC" },
     })
 
-    console.log(`✅ Encontrados ${registros.length} registros`)
+    console.log(`✅ [Registros] Encontrados: ${registros.length}`)
 
     res.json({
+      success: true,
       message: "Registros obtenidos exitosamente",
       registros,
       total: registros.length,
     })
   } catch (error) {
-    console.error("❌ Error al obtener registros:", error)
+    console.error("❌ [Registros] Error:", error)
     res.status(500).json({
+      success: false,
       message: "Error al obtener registros",
       error: error instanceof Error ? error.message : "Error desconocido",
     })
   }
 }
 
+// ✅ GET Registro por ID
 export const getRegistroById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    console.log(`🔍 Obteniendo registro con ID: ${id}`)
+    console.log(`🔍 [Registros] GET /api/registros/${id}`)
 
     const registro = await registroRepository.findOne({
       where: { id: Number.parseInt(id) },
@@ -49,55 +54,63 @@ export const getRegistroById = async (req: Request, res: Response) => {
 
     if (!registro) {
       return res.status(404).json({
+        success: false,
         message: "Registro no encontrado",
       })
     }
 
-    console.log("✅ Registro encontrado")
+    console.log("✅ [Registros] Registro encontrado")
 
     res.json({
+      success: true,
       message: "Registro obtenido exitosamente",
       registro,
     })
   } catch (error) {
-    console.error("❌ Error al obtener registro:", error)
+    console.error("❌ [Registros] Error:", error)
     res.status(500).json({
+      success: false,
       message: "Error al obtener registro",
       error: error instanceof Error ? error.message : "Error desconocido",
     })
   }
 }
 
+// ✅ POST Crear Registro
 export const createRegistro = async (req: Request, res: Response) => {
   try {
-    console.log("📥 Creando nuevo registro:", req.body)
+    console.log("📝 [Registros] POST /api/registros")
 
     const { camionId, conductor, fechaHora, tipoPetroleo, cantidad, tipo, origen, destino, observaciones } = req.body
 
     if (!camionId || !conductor || !tipoPetroleo || !cantidad || !tipo) {
       return res.status(400).json({
+        success: false,
         message: "Faltan campos requeridos: camionId, conductor, tipoPetroleo, cantidad, tipo",
       })
     }
 
     if (!["entrada", "salida"].includes(tipo)) {
       return res.status(400).json({
+        success: false,
         message: "Tipo debe ser 'entrada' o 'salida'",
       })
     }
 
+    // Verificar que el camión existe
     const camion = await camionRepository.findOne({
-      where: { id: Number.parseInt(camionId) },
+      where: { camionId: camionId },
     })
 
     if (!camion) {
       return res.status(404).json({
+        success: false,
         message: "Camión no encontrado",
       })
     }
 
     const registro = registroRepository.create({
-      camion,
+      camionId: camion.camionId,
       conductor,
       fechaHora: fechaHora ? new Date(fechaHora) : new Date(),
       tipoPetroleo,
@@ -115,25 +128,28 @@ export const createRegistro = async (req: Request, res: Response) => {
       relations: ["camion"],
     })
 
-    console.log("✅ Registro creado exitosamente:", savedRegistro.id)
+    console.log("✅ [Registros] Registro creado")
 
     res.status(201).json({
+      success: true,
       message: "Registro creado exitosamente",
       registro: registroCompleto,
     })
   } catch (error) {
-    console.error("❌ Error al crear registro:", error)
+    console.error("❌ [Registros] Error:", error)
     res.status(500).json({
+      success: false,
       message: "Error al crear registro",
       error: error instanceof Error ? error.message : "Error desconocido",
     })
   }
 }
 
+// ✅ PUT Actualizar Registro
 export const updateRegistro = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    console.log(`📝 Actualizando registro con ID: ${id}`, req.body)
+    console.log(`📝 [Registros] PUT /api/registros/${id}`)
 
     const registro = await registroRepository.findOne({
       where: { id: Number.parseInt(id) },
@@ -142,6 +158,7 @@ export const updateRegistro = async (req: Request, res: Response) => {
 
     if (!registro) {
       return res.status(404).json({
+        success: false,
         message: "Registro no encontrado",
       })
     }
@@ -150,16 +167,17 @@ export const updateRegistro = async (req: Request, res: Response) => {
 
     if (camionId) {
       const camion = await camionRepository.findOne({
-        where: { id: Number.parseInt(camionId) },
+        where: { camionId: camionId },
       })
 
       if (!camion) {
         return res.status(404).json({
+          success: false,
           message: "Camión no encontrado",
         })
       }
 
-      registro.camion = camion
+      registro.camionId = camion.camionId
     }
 
     if (conductor) registro.conductor = conductor
@@ -173,25 +191,28 @@ export const updateRegistro = async (req: Request, res: Response) => {
 
     const updatedRegistro = await registroRepository.save(registro)
 
-    console.log("✅ Registro actualizado exitosamente")
+    console.log("✅ [Registros] Registro actualizado")
 
     res.json({
+      success: true,
       message: "Registro actualizado exitosamente",
       registro: updatedRegistro,
     })
   } catch (error) {
-    console.error("❌ Error al actualizar registro:", error)
+    console.error("❌ [Registros] Error:", error)
     res.status(500).json({
+      success: false,
       message: "Error al actualizar registro",
       error: error instanceof Error ? error.message : "Error desconocido",
     })
   }
 }
 
+// ✅ DELETE Eliminar Registro
 export const deleteRegistro = async (req: Request, res: Response) => {
   try {
     const { id } = req.params
-    console.log(`🗑️ Eliminando registro con ID: ${id}`)
+    console.log(`🗑️ [Registros] DELETE /api/registros/${id}`)
 
     const registro = await registroRepository.findOne({
       where: { id: Number.parseInt(id) },
@@ -199,32 +220,37 @@ export const deleteRegistro = async (req: Request, res: Response) => {
 
     if (!registro) {
       return res.status(404).json({
+        success: false,
         message: "Registro no encontrado",
       })
     }
 
     await registroRepository.remove(registro)
 
-    console.log("✅ Registro eliminado exitosamente")
+    console.log("✅ [Registros] Registro eliminado")
 
     res.json({
+      success: true,
       message: "Registro eliminado exitosamente",
     })
   } catch (error) {
-    console.error("❌ Error al eliminar registro:", error)
+    console.error("❌ [Registros] Error:", error)
     res.status(500).json({
+      success: false,
       message: "Error al eliminar registro",
       error: error instanceof Error ? error.message : "Error desconocido",
     })
   }
 }
 
+// ✅ GET Inventario Actual
 export const getInventarioActual = async (req: Request, res: Response) => {
   try {
-    console.log("📊 Calculando inventario actual...")
+    console.log("📊 [Registros] GET /api/registros/inventario")
 
     if (!AppDataSource.isInitialized) {
       return res.status(500).json({
+        success: false,
         message: "Base de datos no disponible",
       })
     }
@@ -234,6 +260,7 @@ export const getInventarioActual = async (req: Request, res: Response) => {
       order: { fechaCreacion: "ASC" },
     })
 
+    // Calcular inventario por tipo de petróleo
     const resumen: { [key: string]: number } = {}
 
     registros.forEach((reg) => {
@@ -254,60 +281,6 @@ export const getInventarioActual = async (req: Request, res: Response) => {
       cantidad: Math.max(0, cantidad),
     }))
 
-    const hoy = new Date()
-    const hace7Dias = new Date(hoy.getTime() - 7 * 24 * 60 * 60 * 1000)
-
-    const historialPorDia: { [fecha: string]: { [tipo: string]: number } } = {}
-
-    for (let i = 6; i >= 0; i--) {
-      const fecha = new Date(hoy.getTime() - i * 24 * 60 * 60 * 1000)
-      const fechaStr = fecha.toISOString().split("T")[0]
-      historialPorDia[fechaStr] = {}
-    }
-
-    const inventarioPorTipoPorFecha: { [fecha: string]: { [tipo: string]: number } } = {}
-
-    registros
-      .sort((a, b) => {
-        const fechaA = a.fechaHora || a.fechaCreacion
-        const fechaB = b.fechaHora || b.fechaCreacion
-        return new Date(fechaA).getTime() - new Date(fechaB).getTime()
-      })
-      .forEach((reg) => {
-        const fecha = reg.fechaHora || reg.fechaCreacion
-        if (!fecha) return
-
-        const fechaStr = new Date(fecha).toISOString().split("T")[0]
-        const tipo = reg.tipoPetroleo?.toLowerCase() || "desconocido"
-        const cantidad = Number.parseFloat(reg.cantidad?.toString() || "0")
-
-        if (!inventarioPorTipoPorFecha[fechaStr]) {
-          const fechas = Object.keys(inventarioPorTipoPorFecha).sort()
-          const ultimaFecha = fechas[fechas.length - 1]
-          inventarioPorTipoPorFecha[fechaStr] = ultimaFecha ? { ...inventarioPorTipoPorFecha[ultimaFecha] } : {}
-        }
-
-        if (!inventarioPorTipoPorFecha[fechaStr][tipo]) {
-          inventarioPorTipoPorFecha[fechaStr][tipo] = 0
-        }
-
-        if (reg.tipo === "entrada") {
-          inventarioPorTipoPorFecha[fechaStr][tipo] += cantidad
-        } else if (reg.tipo === "salida") {
-          inventarioPorTipoPorFecha[fechaStr][tipo] -= cantidad
-        }
-      })
-
-    const fechasOrdenadas = Object.keys(historialPorDia).sort()
-    let ultimoInventario: { [tipo: string]: number } = {}
-
-    fechasOrdenadas.forEach((fechaStr) => {
-      if (inventarioPorTipoPorFecha[fechaStr]) {
-        ultimoInventario = { ...inventarioPorTipoPorFecha[fechaStr] }
-      }
-      historialPorDia[fechaStr] = { ...ultimoInventario }
-    })
-
     const totalEntradas = registros
       .filter((r) => r.tipo === "entrada")
       .reduce((sum, r) => sum + Number.parseFloat(r.cantidad?.toString() || "0"), 0)
@@ -318,13 +291,12 @@ export const getInventarioActual = async (req: Request, res: Response) => {
 
     const inventarioTotal = inventario.reduce((sum, item) => sum + item.cantidad, 0)
 
-    console.log("✅ Inventario calculado exitosamente")
+    console.log("✅ [Registros] Inventario calculado")
 
     res.json({
+      success: true,
       message: "Inventario calculado exitosamente",
       inventario,
-      historial: historialPorDia,
-      registros: registros.slice(-10),
       estadisticas: {
         totalEntradas,
         totalSalidas,
@@ -334,8 +306,9 @@ export const getInventarioActual = async (req: Request, res: Response) => {
       total: registros.length,
     })
   } catch (error) {
-    console.error("❌ Error al calcular inventario:", error)
+    console.error("❌ [Registros] Error:", error)
     res.status(500).json({
+      success: false,
       message: "Error al calcular inventario",
       error: error instanceof Error ? error.message : "Error desconocido",
     })

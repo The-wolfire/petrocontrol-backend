@@ -2,99 +2,92 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
+  CreateDateColumn,
+  UpdateDateColumn,
   OneToMany,
   ManyToOne,
   JoinColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
 } from "typeorm"
 import { RegistroES } from "./RegistroES"
-import { Camionero } from "./Camionero"
 import { Mantenimiento } from "./Mantenimiento"
 import { Viaje } from "./Viaje"
+import { Camionero } from "./Camionero"
 
-@Entity("camiones")
+@Entity("camion")
 export class Camion {
   @PrimaryGeneratedColumn()
-  id: number
+  id!: number
 
-  @Column({ type: "varchar", length: 50, unique: true })
-  camionId: string
+  @Column({ unique: true })
+  camionId!: string
 
-  @Column({ type: "varchar", length: 20, unique: true })
-  placa: string
+  @Column()
+  placa!: string
 
-  @Column({ type: "varchar", length: 50 })
-  marca: string
+  @Column()
+  marca!: string
 
-  @Column({ type: "varchar", length: 50 })
-  modelo: string
+  @Column()
+  modelo!: string
 
-  @Column({ type: "int" })
-  año: number
+  @Column()
+  año!: number
 
-  @Column({ type: "decimal", precision: 10, scale: 2 })
-  capacidad: number
+  @Column("decimal", { precision: 10, scale: 2 })
+  capacidad!: number
 
-  @Column({ type: "varchar", length: 20, default: "activo" })
-  estado: string
+  @Column({ default: "activo" })
+  estado!: string
 
-  @Column({ type: "int", default: 0 })
-  kilometraje: number
+  @Column("decimal", { precision: 10, scale: 2, default: 0 })
+  kilometraje!: number
 
-  @Column({ type: "varchar", length: 30, default: "carga_general" })
-  tipoVehiculo: string
+  @Column({ default: "carga_general" })
+  tipoVehiculo!: string
 
-  @Column({ type: "text", nullable: true })
-  observaciones: string
+  @Column({ nullable: true, type: "text" })
+  notas!: string | null
 
-  @Column({ type: "text", nullable: true })
-  notas: string
+  // ✅ Relación con Camionero
+  @Column({ nullable: true })
+  camioneroId!: number | null
 
-  @Column({ type: "int", nullable: true })
-  camioneroId: number
+  @ManyToOne(() => Camionero, { nullable: true, onDelete: "SET NULL" })
+  @JoinColumn({ name: "camioneroId" })
+  camionero!: Camionero | null
 
+  // ✅ Relaciones inversas
   @OneToMany(
     () => RegistroES,
     (registro) => registro.camion,
   )
-  registros: RegistroES[]
-
-  @ManyToOne(
-    () => Camionero,
-    (camionero) => camionero.camiones,
-  )
-  @JoinColumn({ name: "camioneroId" })
-  camionero: Camionero
+  registros!: RegistroES[]
 
   @OneToMany(
     () => Mantenimiento,
     (mantenimiento) => mantenimiento.camion,
   )
-  mantenimientos: Mantenimiento[]
+  mantenimientos!: Mantenimiento[]
 
   @OneToMany(
     () => Viaje,
     (viaje) => viaje.camion,
   )
-  viajes: Viaje[]
+  viajes!: Viaje[]
 
   @CreateDateColumn()
-  fechaCreacion: Date
+  fechaCreacion!: Date
 
   @UpdateDateColumn()
-  fechaActualizacion: Date
+  fechaActualizacion!: Date
 
+  // ✅ Método para calcular estado
   calcularEstado(): string {
-    if (!this.registros || this.registros.length === 0) {
-      return "disponible"
+    if (this.estado === "mantenimiento") return "En mantenimiento"
+    if (this.estado === "inactivo") return "Inactivo"
+    if (this.mantenimientos && this.mantenimientos.some((m) => m.estado === "en_proceso")) {
+      return "En mantenimiento"
     }
-
-    const registrosOrdenados = this.registros.sort(
-      (a, b) => new Date(b.fechaHora).getTime() - new Date(a.fechaHora).getTime(),
-    )
-
-    const ultimoRegistro = registrosOrdenados[0]
-    return ultimoRegistro.tipo === "entrada" ? "disponible" : "en_ruta"
+    return "Disponible"
   }
 }

@@ -1,42 +1,58 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from "typeorm"
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from "typeorm"
 import { Camion } from "./Camion"
 
-@Entity("registros_es")
+@Entity("registro_es")
 export class RegistroES {
   @PrimaryGeneratedColumn()
-  id: number
+  id!: number
 
-  @Column({ type: "varchar", length: 100 })
-  conductor: string
+  @Column()
+  camionId!: string
 
-  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
-  fechaHora: Date
-
-  @Column({ type: "varchar", length: 50 })
-  tipoPetroleo: string
-
-  @Column({ type: "decimal", precision: 10, scale: 2 })
-  cantidad: number
-
-  @Column({ type: "varchar", length: 20 })
-  tipo: string
-
-  @Column({ type: "varchar", length: 100, nullable: true })
-  origen: string
-
-  @Column({ type: "varchar", length: 100, nullable: true })
-  destino: string
-
-  @Column({ type: "text", nullable: true })
-  observaciones: string
-
+  // ✅ Relación con Camion usando camionId como string
   @ManyToOne(
     () => Camion,
     (camion) => camion.registros,
+    { onDelete: "CASCADE" },
   )
-  @JoinColumn({ name: "camionId" }) // Esta anotación crea automáticamente la columna foreign key
-  camion: Camion
+  @JoinColumn({ name: "camionId", referencedColumnName: "camionId" })
+  camion!: Camion
+
+  @Column()
+  conductor!: string
+
+  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+  fechaHora!: Date
+
+  @Column()
+  tipoPetroleo!: string
+
+  @Column("decimal", { precision: 10, scale: 2 })
+  cantidad!: number
+
+  @Column()
+  tipo!: string // "entrada" o "salida"
+
+  @Column({ type: "varchar", nullable: true }) // CAMBIADO: tipo explícito
+  origen!: string | null
+
+  @Column({ type: "varchar", nullable: true }) // CAMBIADO: tipo explícito
+  destino!: string | null
+
+  @Column({ type: "text", nullable: true }) // CAMBIADO: tipo explícito
+  observaciones!: string | null
 
   @CreateDateColumn()
-  fechaCreacion: Date
+  fechaCreacion!: Date
+
+  @UpdateDateColumn()
+  fechaActualizacion!: Date
 }

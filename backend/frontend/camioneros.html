@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetroControl | Camioneros</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="auth.js"></script>
+<script src="api.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-gas-pump"></i>
+                <h2>PetroControl</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="dashboard.html">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Panel</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="registro.html">
+                            <i class="fas fa-clipboard-list"></i>
+                            <span>Registro E/S</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="inventario.html">
+                            <i class="fas fa-warehouse"></i>
+                            <span>Inventario</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="camiones.html">
+                            <i class="fas fa-truck"></i>
+                            <span>Camiones</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="mantenimiento.html">
+                            <i class="fas fa-tools"></i>
+                            <span>Mantenimiento</span>
+                        </a>
+                    </li>
+                    <li class="active">
+                        <a href="camioneros.html">
+                            <i class="fas fa-users"></i>
+                            <span>Camioneros</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Cerrar Sesión</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="main-header">
+                <h1>Gestión de Camioneros</h1>
+                <div class="user-info">
+                    <span id="user-name">Cargando...</span>
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+
+            <div class="content-box">
+                <!-- Barra de acciones -->
+                <div class="actions-bar">
+                    <button id="add-camionero-btn" class="btn-primary">
+                        <i class="fas fa-plus"></i> Nuevo Camionero
+                    </button>
+                </div>
+
+                <!-- Estadísticas -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fas fa-users"></i>
+                        <div>
+                            <h3>Total Camioneros</h3>
+                            <p id="total-camioneros">-</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-user-check"></i>
+                        <div>
+                            <h3>Activos</h3>
+                            <p id="camioneros-activos">-</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-bed"></i>
+                        <div>
+                            <h3>En Descanso</h3>
+                            <p id="camioneros-descanso">-</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-user-times"></i>
+                        <div>
+                            <h3>Inactivos</h3>
+                            <p id="camioneros-inactivos">-</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lista de camioneros -->
+                <div class="camioneros-section">
+                    <h3><i class="fas fa-list"></i> Lista de Camioneros</h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Cédula</th>
+                                    <th>Licencia</th>
+                                    <th>Teléfono</th>
+                                    <th>Fecha Ingreso</th>
+                                    <th>Estado</th>
+                                    <th>Último Viaje</th>
+                                </tr>
+                            </thead>
+                            <tbody id="camioneros-table-body">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; padding: 20px; color: #666;">
+                                        <i class="fas fa-spinner fa-spin"></i> Cargando camioneros...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar camionero -->
+    <div id="camionero-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nuevo Camionero</h2>
+                <button class="close-modal" onclick="cerrarModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="camionero-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nombre">
+                                <i class="fas fa-user"></i> Nombre:
+                            </label>
+                            <input type="text" id="nombre" placeholder="Nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="apellido">
+                                <i class="fas fa-user"></i> Apellido:
+                            </label>
+                            <input type="text" id="apellido" placeholder="Apellido" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cedula">
+                                <i class="fas fa-id-card"></i> Cédula:
+                            </label>
+                            <input type="text" id="cedula" placeholder="Número de cédula" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="licencia">
+                                <i class="fas fa-id-badge"></i> Licencia:
+                            </label>
+                            <input type="text" id="licencia" placeholder="Número de licencia" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="telefono">
+                                <i class="fas fa-phone"></i> Teléfono:
+                            </label>
+                            <input type="tel" id="telefono" placeholder="Número de teléfono" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">
+                                <i class="fas fa-envelope"></i> Email:
+                            </label>
+                            <input type="email" id="email" placeholder="Correo electrónico">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fecha-nacimiento">
+                                <i class="fas fa-birthday-cake"></i> Fecha de Nacimiento:
+                            </label>
+                            <input type="date" id="fecha-nacimiento" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="fecha-ingreso">
+                                <i class="fas fa-calendar"></i> Fecha de Ingreso:
+                            </label>
+                            <input type="date" id="fecha-ingreso" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="observaciones-cam">
+                            <i class="fas fa-comment"></i> Observaciones:
+                        </label>
+                        <textarea id="observaciones-cam" placeholder="Observaciones adicionales" rows="3"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Página de camioneros cargada');
+            
+            const token = localStorage.getItem("token");
+            if (!token) {
+                alert("No estás autenticado. Redirigiendo al login...");
+                window.location.href = "index.html";
+                return;
+            }
+            
+            try {
+                const decoded = JSON.parse(atob(token));
+                const userNameElement = document.getElementById('user-name');
+                if (userNameElement) {
+                    userNameElement.textContent = decoded.username || 'Usuario';
+                }
+            } catch (error) {
+                console.error('❌ Error decodificando token:', error);
+                localStorage.removeItem('token');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            inicializarPagina();
+        });
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        }
+
+        function inicializarPagina() {
+            cargarCamioneros();
+            
+            document.getElementById('add-camionero-btn').addEventListener('click', abrirModal);
+            document.getElementById('camionero-form').addEventListener('submit', guardarCamionero);
+            
+            // Establecer fecha actual para fecha de ingreso
+            const hoy = new Date().toISOString().split('T')[0];
+            document.getElementById('fecha-ingreso').value = hoy;
+        }
+
+        async function cargarCamioneros() {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await fetch('http://localhost:3000/api/camioneros', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error(`Error ${response.status}`);
+
+                const data = await response.json();
+                const camioneros = data.camioneros || [];
+                
+                mostrarCamioneros(camioneros);
+                actualizarEstadisticas(camioneros);
+
+            } catch (error) {
+                console.error('❌ Error al cargar camioneros:', error);
+                mostrarError('Error al cargar camioneros: ' + error.message);
+            }
+        }
+
+        function mostrarCamioneros(camioneros) {
+            const tbody = document.getElementById('camioneros-table-body');
+            
+            if (camioneros.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 20px; color: #666;">
+                            📋 No hay camioneros registrados
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = camioneros.map(camionero => {
+                const fechaIngreso = new Date(camionero.fechaIngreso).toLocaleDateString('es-ES');
+                const ultimoViaje = camionero.ultimoViaje ? 
+                    new Date(camionero.ultimoViaje).toLocaleDateString('es-ES') : 'Nunca';
+                
+                const estadoClass = {
+                    'activo': 'badge-success',
+                    'inactivo': 'badge-error',
+                    'vacaciones': 'badge-warning',
+                    'licencia': 'badge-info'
+                }[camionero.estado] || 'badge-info';
+
+                const estadoIcon = {
+                    'activo': 'fas fa-check-circle',
+                    'inactivo': 'fas fa-times-circle',
+                    'vacaciones': 'fas fa-umbrella-beach',
+                    'licencia': 'fas fa-user-clock'
+                }[camionero.estado] || 'fas fa-info-circle';
+
+                return `
+                    <tr>
+                        <td><strong>${camionero.nombre} ${camionero.apellido}</strong></td>
+                        <td>${camionero.cedula}</td>
+                        <td>${camionero.licencia}</td>
+                        <td>${camionero.telefono}</td>
+                        <td>${fechaIngreso}</td>
+                        <td>
+                            <span class="badge ${estadoClass}">
+                                <i class="${estadoIcon}"></i> ${camionero.estado}
+                            </span>
+                            ${camionero.enDescanso ? '<br><small style="color: orange;">En descanso</small>' : ''}
+                        </td>
+                        <td>${ultimoViaje}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function actualizarEstadisticas(camioneros) {
+            const total = camioneros.length;
+            const activos = camioneros.filter(c => c.estado === 'activo').length;
+            const enDescanso = camioneros.filter(c => c.enDescanso).length;
+            const inactivos = camioneros.filter(c => c.estado === 'inactivo').length;
+
+            document.getElementById('total-camioneros').textContent = total;
+            document.getElementById('camioneros-activos').textContent = activos;
+            document.getElementById('camioneros-descanso').textContent = enDescanso;
+            document.getElementById('camioneros-inactivos').textContent = inactivos;
+        }
+
+        function abrirModal() {
+            document.getElementById('camionero-modal').style.display = 'flex';
+        }
+
+        function cerrarModal() {
+            document.getElementById('camionero-modal').style.display = 'none';
+            document.getElementById('camionero-form').reset();
+        }
+
+        async function guardarCamionero(event) {
+            event.preventDefault();
+            
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+            submitBtn.disabled = true;
+
+            try {
+                const token = localStorage.getItem("token");
+                const data = {
+                    nombre: document.getElementById('nombre').value.trim(),
+                    apellido: document.getElementById('apellido').value.trim(),
+                    cedula: document.getElementById('cedula').value.trim(),
+                    licencia: document.getElementById('licencia').value.trim(),
+                    telefono: document.getElementById('telefono').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    fechaNacimiento: document.getElementById('fecha-nacimiento').value,
+                    fechaIngreso: document.getElementById('fecha-ingreso').value,
+                    observaciones: document.getElementById('observaciones-cam').value.trim()
+                };
+
+                const response = await fetch('http://localhost:3000/api/camioneros', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Error ${response.status}`);
+                }
+
+                cerrarModal();
+                await cargarCamioneros();
+                showMessage('✅ Camionero registrado exitosamente', 'success');
+
+            } catch (error) {
+                console.error('❌ Error al guardar camionero:', error);
+                showMessage('❌ Error: ' + error.message, 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        function mostrarError(mensaje) {
+            const tbody = document.getElementById('camioneros-table-body');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 20px; color: red;">
+                        ❌ ${mensaje}
+                    </td>
+                </tr>
+            `;
+        }
+
+        function showMessage(message, type = "info") {
+            const existingMessages = document.querySelectorAll(".floating-message");
+            existingMessages.forEach((msg) => msg.remove());
+
+            const messageDiv = document.createElement("div");
+            messageDiv.className = `floating-message message-${type}`;
+            messageDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span>${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; font-size: 18px; cursor: pointer;">×</button>
+                </div>
+            `;
+
+            messageDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 12px;
+                color: white;
+                font-weight: 500;
+                z-index: 1000;
+                max-width: 400px;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+                animation: slideIn 0.3s ease-out;
+            `;
+
+            if (type === "success") {
+                messageDiv.style.backgroundColor = "#4caf50";
+            } else if (type === "error") {
+                messageDiv.style.backgroundColor = "#f44336";
+            } else {
+                messageDiv.style.backgroundColor = "#2196f3";
+            }
+
+            document.body.appendChild(messageDiv);
+
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.style.animation = "slideIn 0.3s ease-out reverse";
+                    setTimeout(() => {
+                        if (messageDiv.parentNode) {
+                            messageDiv.parentNode.removeChild(messageDiv);
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
+    </script>
+
+    <!-- Estilos CSS para centrar los modales correctamente -->
+    <style>
+        .camioneros-section {
+            margin-top: 30px;
+        }
+        .camioneros-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-success { 
+            background-color: #4caf50; 
+            color: white; 
+        }
+
+        .badge-warning { 
+            background-color: #ff9800; 
+            color: white; 
+        }
+
+        .badge-error { 
+            background-color: #f44336; 
+            color: white; 
+        }
+
+        .badge-info { 
+            background-color: #2196f3; 
+            color: white; 
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+            }
+            
+            .modal {
+                padding: 20px;
+            }
+        }
+</style>
+</body>
+</html>

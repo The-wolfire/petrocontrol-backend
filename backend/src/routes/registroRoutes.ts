@@ -7,21 +7,27 @@ import {
   deleteRegistro,
   getInventarioActual,
 } from "../controllers/registroController"
-import { authenticateToken } from "../middleware/auth"
+import { authenticateToken, requireRole } from "../middleware/auth"
 
 const router = Router()
 
-// Proteger todas las rutas con autenticación
+// Logging middleware
+router.use((req, res, next) => {
+  console.log(`📋 [Registros Route] ${req.method} ${req.path}`)
+  next()
+})
+
+// ✅ Aplicar autenticación a todas las rutas
 router.use(authenticateToken)
 
-// Ruta de inventario DEBE ir ANTES de las rutas con :id
-router.get("/inventario", getInventarioActual)
-
-// Rutas CRUD de registros
+// Rutas públicas (con autenticación)
 router.get("/", getRegistros)
+router.get("/inventario", getInventarioActual)
 router.get("/:id", getRegistroById)
-router.post("/", createRegistro)
-router.put("/:id", updateRegistro)
-router.delete("/:id", deleteRegistro)
+
+// Rutas que requieren permisos específicos
+router.post("/", requireRole(["admin", "operador"]), createRegistro)
+router.put("/:id", requireRole(["admin", "operador"]), updateRegistro)
+router.delete("/:id", requireRole(["admin"]), deleteRegistro)
 
 export default router

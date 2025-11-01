@@ -2,72 +2,70 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
-  JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from "typeorm"
 import { Camion } from "./Camion"
 import { Camionero } from "./Camionero"
 
-@Entity("viajes")
+@Entity("viaje")
 export class Viaje {
   @PrimaryGeneratedColumn()
-  id: number
+  id!: number
 
-  @Column({ type: "int" })
-  camionId: number
-
-  @Column({ type: "int" })
-  camioneroId: number
-
-  @Column({ type: "varchar", length: 100 })
-  origen: string
-
-  @Column({ type: "varchar", length: 100 })
-  destino: string
-
-  @Column({ type: "int" })
-  distanciaKm: number
-
-  @Column({ type: "int" })
-  cargaKg: number
-
-  @Column({ type: "timestamp" })
-  fechaSalida: Date
-
-  @Column({ type: "timestamp", nullable: true })
-  fechaLlegada: Date
-
-  @Column({ type: "varchar", length: 30, default: "programado" })
-  estado: string
-
-  @Column({ type: "text", nullable: true })
-  observaciones: string
-
-  @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
-  combustibleConsumido: number
-
-  @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
-  costoViaje: number
+  // ✅ Relación con Camion
+  @Column()
+  camionId!: number
 
   @ManyToOne(
     () => Camion,
     (camion) => camion.viajes,
+    { onDelete: "CASCADE" },
   )
   @JoinColumn({ name: "camionId" })
-  camion: Camion
+  camion!: Camion
+
+  // ✅ Relación con Camionero
+  @Column()
+  camioneroId!: number
 
   @ManyToOne(
     () => Camionero,
     (camionero) => camionero.viajes,
+    { onDelete: "CASCADE" },
   )
   @JoinColumn({ name: "camioneroId" })
-  camionero: Camionero
+  camionero!: Camionero
+
+  @Column()
+  origen!: string
+
+  @Column()
+  destino!: string
+
+  @Column("decimal", { precision: 10, scale: 2 })
+  distanciaKm!: number
+
+  @Column("decimal", { precision: 10, scale: 2, nullable: true })
+  cargaKg!: number | null
+
+  @Column({ type: "timestamp" })
+  fechaSalida!: Date
+
+  @Column({ type: "timestamp", nullable: true })
+  fechaLlegada!: Date | null
+
+  @Column({ default: "en_curso" })
+  estado!: string
+
+  @Column({ nullable: true, type: "text" })
+  observaciones!: string | null
 
   @CreateDateColumn()
-  fechaCreacion: Date
+  fechaCreacion!: Date
 
   @UpdateDateColumn()
-  fechaActualizacion: Date
+  fechaActualizacion!: Date
 }

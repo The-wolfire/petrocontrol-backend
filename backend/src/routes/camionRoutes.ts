@@ -1,5 +1,6 @@
 import { Router } from "express"
 import { createCamion, getCamiones, getCamionById, updateCamion, deleteCamion } from "../controllers/camionController"
+import { authenticateToken } from "../middleware/auth" // ✅ Importa el middleware correcto
 
 const router = Router()
 
@@ -9,30 +10,7 @@ router.use((req, res, next) => {
   next()
 })
 
-// Middleware de autenticación simple (temporal)
-const authenticateToken = (req: any, res: any, next: any) => {
-  try {
-    const authHeader = req.headers.authorization
-    const token = authHeader && authHeader.split(" ")[1]
-
-    if (!token) {
-      return res.status(401).json({ message: "Token requerido" })
-    }
-
-    try {
-      const decoded = JSON.parse(Buffer.from(token, "base64").toString())
-      req.user = decoded
-      next()
-    } catch (error) {
-      return res.status(403).json({ message: "Token inválido" })
-    }
-  } catch (error) {
-    console.error("Error en autenticación:", error)
-    res.status(500).json({ message: "Error en autenticación" })
-  }
-}
-
-// Aplicar autenticación a todas las rutas
+// ✅ USA EL MIDDLEWARE CORRECTO DE AUTENTICACIÓN JWT
 router.use(authenticateToken)
 
 // Rutas de camiones
@@ -42,5 +20,4 @@ router.get("/:id", getCamionById)
 router.put("/:id", updateCamion)
 router.delete("/:id", deleteCamion)
 
-// EXPORTACIÓN POR DEFECTO
 export default router
