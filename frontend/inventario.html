@@ -7,8 +7,6 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="auth.js"></script>
-    <script src="api.js"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -38,12 +36,6 @@
                             <span>Camiones</span>
                         </a>
                     </li>
-                    <li class="active">
-                        <a href="inventario.html">
-                            <i class="fas fa-warehouse"></i>
-                            <span>Inventario</span>
-                        </a>
-                    </li>
                     <li>
                         <a href="mantenimiento.html">
                             <i class="fas fa-tools"></i>
@@ -54,6 +46,12 @@
                         <a href="camioneros.html">
                             <i class="fas fa-users"></i>
                             <span>Camioneros</span>
+                        </a>
+                    </li>
+                    <li class="active">
+                        <a href="inventario.html">
+                            <i class="fas fa-warehouse"></i>
+                            <span>Inventario</span>
                         </a>
                     </li>
                     <li>
@@ -134,24 +132,37 @@
         let inventoryChart = null;
         const API_BASE_URL = "http://localhost:3000/api";
 
-        // AUTENTICACIÓN - Igual que en otras páginas
+        // AUTENTICACIÓN
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Página de inventario cargada');
             
+            // Verificar autenticación PRIMERO
+            if (!verificarAutenticacion()) {
+                return; // Detener ejecución si no hay token
+            }
+            
+            // Cargar datos del inventario
+            cargarInventarioActual();
+            cargarMovimientosRecientes();
+            inicializarGrafico();
+        });
+
+        function verificarAutenticacion() {
             const token = localStorage.getItem("token");
             console.log('🔑 Token encontrado:', token ? 'Sí' : 'No');
             
             if (!token) {
                 console.log('❌ No hay token, redirigiendo al login');
+                alert("No estás autenticado. Redirigiendo al login...");
                 window.location.href = "index.html";
-                return;
+                return false;
             }
             
             console.log('✅ Token válido, cargando página');
             
-            // Decodificar token - MISMO MÉTODO QUE OTRAS PÁGINAS
+            // Decodificar token
             try {
-                const decoded = JSON.parse(atob(token));
+                const decoded = JSON.parse(atob(token.split('.')[1]));
                 console.log('👤 Usuario decodificado:', decoded);
                 
                 const userNameElement = document.getElementById('user-name');
@@ -160,23 +171,21 @@
                 }
             } catch (error) {
                 console.error('❌ Error decodificando token:', error);
-                // NO REDIRIGIR, solo mostrar nombre genérico
                 const userNameElement = document.getElementById('user-name');
                 if (userNameElement) {
                     userNameElement.textContent = 'Usuario';
                 }
             }
 
-            // Cargar datos del inventario
-            cargarInventarioActual();
-            cargarMovimientosRecientes();
-            inicializarGrafico();
-        });
+            return true;
+        }
 
         function logout() {
             console.log('🚪 Cerrando sesión');
-            localStorage.removeItem('token');
-            window.location.href = 'index.html';
+            if (confirm('¿Está seguro de que desea cerrar sesión?')) {
+                localStorage.removeItem('token');
+                window.location.href = 'index.html';
+            }
         }
 
         async function cargarInventarioActual() {
@@ -184,13 +193,27 @@
                 console.log('📊 Cargando inventario actual...');
                 
                 const token = localStorage.getItem("token");
+                if (!token) {
+                    console.error('❌ No hay token disponible');
+                    window.location.href = "index.html";
+                    return;
+                }
+
                 const response = await fetch(`${API_BASE_URL}/registros/inventario`, {
                     headers: {
-                        Authorization: `Bearer ${token}`,
+                        'Authorization': `Bearer ${token}`,
                     },
                 });
 
                 console.log('📡 Respuesta inventario:', response.status);
+
+                if (response.status === 401) {
+                    console.error('❌ Token inválido o expirado');
+                    alert('Su sesión ha expirado. Por favor, inicie sesión nuevamente.');
+                    localStorage.removeItem('token');
+                    window.location.href = 'index.html';
+                    return;
+                }
 
                 if (!response.ok) {
                     throw new Error(`Error ${response.status}`);
@@ -204,7 +227,6 @@
 
             } catch (error) {
                 console.error('❌ Error al cargar inventario:', error);
-                // Mostrar mensaje de error pero NO redirigir
                 const container = document.getElementById('inventory-summary');
                 container.innerHTML = `
                     <div class="no-data-message">
@@ -221,13 +243,25 @@
                 console.log('📋 Cargando movimientos recientes...');
                 
                 const token = localStorage.getItem("token");
+                if (!token) {
+                    console.error('❌ No hay token disponible');
+                    return;
+                }
+
                 const response = await fetch(`${API_BASE_URL}/registros`, {
                     headers: {
-                        Authorization: `Bearer ${token}`,
+                        'Authorization': `Bearer ${token}`,
                     },
                 });
 
                 console.log('📡 Respuesta movimientos:', response.status);
+
+                if (response.status === 401) {
+                    console.error('❌ Token inválido o expirado');
+                    localStorage.removeItem('token');
+                    window.location.href = 'index.html';
+                    return;
+                }
 
                 if (!response.ok) {
                     throw new Error(`Error ${response.status}`);

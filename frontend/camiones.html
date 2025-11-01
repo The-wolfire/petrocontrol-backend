@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PetroControl | Gestión de Camiones</title>
+    <title>PetroControl | Camiones</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="auth.js"></script>
-<script src="api.js"></script>
+    
+    <!-- Agregar configuración de API dinámica -->
+    <script src="config.js"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -83,7 +84,7 @@
                     </button>
                 </div>
 
-                <!-- Estadísticas rápidas -->
+                <!-- Estadísticas -->
                 <div class="stats-grid">
                     <div class="stat-card">
                         <i class="fas fa-truck"></i>
@@ -95,22 +96,22 @@
                     <div class="stat-card">
                         <i class="fas fa-check-circle"></i>
                         <div>
-                            <h3>Activos</h3>
-                            <p id="camiones-activos">-</p>
+                            <h3>Disponibles</h3>
+                            <p id="camiones-disponibles">-</p>
                         </div>
                     </div>
                     <div class="stat-card">
-                        <i class="fas fa-tools"></i>
+                        <i class="fas fa-road"></i>
+                        <div>
+                            <h3>En Ruta</h3>
+                            <p id="camiones-ruta">-</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-wrench"></i>
                         <div>
                             <h3>En Mantenimiento</h3>
                             <p id="camiones-mantenimiento">-</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <i class="fas fa-pause-circle"></i>
-                        <div>
-                            <h3>Inactivos</h3>
-                            <p id="camiones-inactivos">-</p>
                         </div>
                     </div>
                 </div>
@@ -125,14 +126,16 @@
                                     <th>ID Camión</th>
                                     <th>Marca</th>
                                     <th>Modelo</th>
-                                    <th>Capacidad (L)</th>
+                                    <th>Año</th>
+                                    <th>Placa</th>
+                                    <th>Capacidad</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="camiones-table-body">
                                 <tr>
-                                    <td colspan="6" style="text-align: center; padding: 20px; color: #666;">
+                                    <td colspan="8" style="text-align: center; padding: 20px; color: #666;">
                                         <i class="fas fa-spinner fa-spin"></i> Cargando camiones...
                                     </td>
                                 </tr>
@@ -153,51 +156,65 @@
             </div>
             <div class="modal-body">
                 <form id="camion-form">
+                    <input type="hidden" id="camion-id-edit">
                     <div class="form-row">
                         <div class="form-group">
                             <label for="camion-id">
-                                <i class="fas fa-id-card"></i> ID Camión:
+                                <i class="fas fa-id-card"></i> ID del Camión:
                             </label>
                             <input type="text" id="camion-id" placeholder="Ej: C-001" required>
                         </div>
                         <div class="form-group">
-                            <label for="camion-estado">
-                                <i class="fas fa-info-circle"></i> Estado:
+                            <label for="placa">
+                                <i class="fas fa-id-badge"></i> Placa:
                             </label>
-                            <select id="camion-estado" required>
-                                <option value="activo">Activo</option>
-                                <option value="mantenimiento">En Mantenimiento</option>
-                                <option value="inactivo">Inactivo</option>
-                            </select>
+                            <input type="text" id="placa" placeholder="Ej: ABC-123" required>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="camion-marca">
-                                <i class="fas fa-industry"></i> Marca:
+                            <label for="marca">
+                                <i class="fas fa-copyright"></i> Marca:
                             </label>
-                            <input type="text" id="camion-marca" placeholder="Ej: Volvo" required>
+                            <input type="text" id="marca" placeholder="Ej: Volvo" required>
                         </div>
                         <div class="form-group">
-                            <label for="camion-modelo">
+                            <label for="modelo">
                                 <i class="fas fa-truck"></i> Modelo:
                             </label>
-                            <input type="text" id="camion-modelo" placeholder="Ej: FH16" required>
+                            <input type="text" id="modelo" placeholder="Ej: FH16" required>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="camion-capacidad">
-                                <i class="fas fa-tachometer-alt"></i> Capacidad (Litros):
+                            <label for="anio">
+                                <i class="fas fa-calendar"></i> Año:
                             </label>
-                            <input type="number" id="camion-capacidad" min="1000" max="50000" placeholder="Ej: 15000" required>
+                            <input type="number" id="anio" min="1990" max="2030" placeholder="2023" required>
                         </div>
                         <div class="form-group">
-                            <label for="camion-notas">
-                                <i class="fas fa-comment"></i> Notas:
+                            <label for="capacidad">
+                                <i class="fas fa-tachometer-alt"></i> Capacidad (L):
                             </label>
-                            <input type="text" id="camion-notas" placeholder="Notas adicionales (opcional)">
+                            <input type="number" id="capacidad" min="1000" step="100" placeholder="40000" required>
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="tipo-vehiculo">
+                            <i class="fas fa-truck-moving"></i> Tipo de Vehículo:
+                        </label>
+                        <select id="tipo-vehiculo" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="cisterna">Cisterna</option>
+                            <option value="tanquero">Tanquero</option>
+                            <option value="camion">Camión</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="observaciones">
+                            <i class="fas fa-comment"></i> Observaciones:
+                        </label>
+                        <textarea id="observaciones" placeholder="Observaciones adicionales" rows="3"></textarea>
                     </div>
                     <div class="form-actions">
                         <button type="button" class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
@@ -210,168 +227,107 @@
         </div>
     </div>
 
-    <!-- Modal de confirmación -->
-    <div id="confirmation-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Confirmación</h2>
-                <button class="close-modal" onclick="cerrarModalConfirmacion()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p id="confirmation-message">¿Está seguro que desea realizar esta acción?</p>
-                <div class="form-actions">
-                    <button id="cancel-action" class="btn-secondary" onclick="cerrarModalConfirmacion()">Cancelar</button>
-                    <button id="confirm-action" class="btn-primary">Confirmar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- JavaScript -->
     <script>
-        // Variables globales
-        let camionEditando = null;
-        let accionConfirmacion = null;
+        let currentCamionId = null;
 
-        // Verificar autenticación al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Página de camiones cargada');
+            console.log('🚀 Página de camiones cargada con API:', API_BASE_URL);
             
-            const token = localStorage.getItem("token");
-            console.log('🔑 Token encontrado:', token ? 'Sí' : 'No');
-            
-            if (!token) {
-                console.log('❌ No hay token, redirigiendo al login');
-                alert("No estás autenticado. Redirigiendo al login...");
-                window.location.href = "index.html";
-                return;
-            }
-            
-            console.log('✅ Token válido, usuario autenticado');
-            
-            // Decodificar token para obtener info del usuario
-            try {
-                const decoded = JSON.parse(atob(token));
-                console.log('👤 Usuario decodificado:', decoded);
-                
-                const userNameElement = document.getElementById('user-name');
-                if (userNameElement) {
-                    userNameElement.textContent = decoded.username || 'Usuario';
-                }
-            } catch (error) {
-                console.error('❌ Error decodificando token:', error);
-                localStorage.removeItem('token');
-                window.location.href = 'index.html';
+            if (!verificarAutenticacion()) {
                 return;
             }
 
-            // Inicializar la página
             inicializarPagina();
         });
 
+        function verificarAutenticacion() {
+            const token = localStorage.getItem("token");
+            
+            if (!token) {
+                console.warn('⚠️ No hay token, redirigiendo al login...');
+                setTimeout(() => {
+                    window.location.href = "index.html";
+                }, 100);
+                return false;
+            }
+            
+            try {
+                // Decodificar el token JWT manualmente
+                const payload = token.split('.')[1];
+                const decodedPayload = JSON.parse(atob(payload));
+                
+                // Verificar si el token ha expirado
+                const currentTime = Math.floor(Date.now() / 1000);
+                if (decodedPayload.exp && decodedPayload.exp < currentTime) {
+                    console.warn('⚠️ Token expirado, redirigiendo al login...');
+                    localStorage.removeItem('token');
+                    setTimeout(() => {
+                        window.location.href = "index.html";
+                    }, 100);
+                    return false;
+                }
+
+                // Actualizar nombre de usuario
+                const userNameElement = document.getElementById('user-name');
+                if (userNameElement) {
+                    userNameElement.textContent = decodedPayload.username || 'Usuario';
+                }
+
+                console.log('✅ Token válido:', decodedPayload.username);
+                return true;
+
+            } catch (error) {
+                console.error('❌ Error al verificar token:', error);
+                localStorage.removeItem('token');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 100);
+                return false;
+            }
+        }
+
         function logout() {
-            console.log('🚪 Cerrando sesión');
+            console.log('🚪 Cerrando sesión...');
             localStorage.removeItem('token');
             window.location.href = 'index.html';
         }
 
         function inicializarPagina() {
-            console.log('🔧 Inicializando página de camiones');
-            
-            // Cargar camiones
             cargarCamiones();
             
-            // Event listeners
-            document.getElementById('add-camion-btn').addEventListener('click', abrirModalNuevoCamion);
-            document.getElementById('camion-form').addEventListener('submit', guardarCamion);
-            
-            // Cerrar modales al hacer clic fuera
-            window.addEventListener('click', function(event) {
-                const modalCamion = document.getElementById('camion-modal');
-                const modalConfirmacion = document.getElementById('confirmation-modal');
-                
-                if (event.target === modalCamion) {
-                    cerrarModal();
-                }
-                if (event.target === modalConfirmacion) {
-                    cerrarModalConfirmacion();
-                }
+            document.getElementById('add-camion-btn').addEventListener('click', () => {
+                currentCamionId = null;
+                document.getElementById('modal-title').textContent = 'Nuevo Camión';
+                abrirModal();
             });
-        }
-
-        function abrirModalNuevoCamion() {
-            console.log('➕ Abriendo modal para nuevo camión');
-            camionEditando = null;
-            document.getElementById('modal-title').textContent = 'Nuevo Camión';
-            document.getElementById('camion-form').reset();
-            document.getElementById('camion-modal').style.display = 'block';
-        }
-
-        function abrirModalEditarCamion(camion) {
-            console.log('✏️ Abriendo modal para editar camión:', camion.camionId);
-            camionEditando = camion;
-            document.getElementById('modal-title').textContent = 'Editar Camión';
             
-            // Llenar el formulario con los datos del camión
-            document.getElementById('camion-id').value = camion.camionId;
-            document.getElementById('camion-marca').value = camion.marca;
-            document.getElementById('camion-modelo').value = camion.modelo;
-            document.getElementById('camion-capacidad').value = camion.capacidad;
-            document.getElementById('camion-estado').value = camion.estado;
-            document.getElementById('camion-notas').value = camion.notas || '';
-            
-            document.getElementById('camion-modal').style.display = 'block';
-        }
-
-        function cerrarModal() {
-            document.getElementById('camion-modal').style.display = 'none';
-            camionEditando = null;
-        }
-
-        function cerrarModalConfirmacion() {
-            document.getElementById('confirmation-modal').style.display = 'none';
-            accionConfirmacion = null;
+            document.getElementById('camion-form').addEventListener('submit', guardarCamion);
         }
 
         async function cargarCamiones() {
             try {
-                console.log('🔍 Cargando camiones...');
-                
                 const token = localStorage.getItem("token");
-                const API_BASE_URL = "http://localhost:3000/api";
-
                 const response = await fetch(`${API_BASE_URL}/camiones`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
 
-                console.log('📡 Respuesta del servidor:', response.status, response.statusText);
+                if (response.status === 401) {
+                    console.warn('⚠️ No autorizado, redirigiendo al login...');
+                    localStorage.removeItem('token');
+                    window.location.href = 'index.html';
+                    return;
+                }
 
                 if (!response.ok) {
                     throw new Error(`Error ${response.status}: ${response.statusText}`);
                 }
 
                 const data = await response.json();
-                console.log('📊 Datos completos recibidos:', data);
-
-                const camiones = data.camiones || data || [];
-                console.log('🚛 Array de camiones:', camiones);
+                const camiones = data.camiones || [];
                 
-                // LOG DETALLADO de cada camión
-                camiones.forEach((camion, index) => {
-                    console.log(`🔍 Camión ${index + 1} en frontend:`, {
-                        id: camion.id,
-                        camionId: camion.camionId,
-                        marca: camion.marca,
-                        modelo: camion.modelo,
-                        capacidad: camion.capacidad,
-                        estado: camion.estado,
-                        estadoTipo: typeof camion.estado,
-                        notas: camion.notas
-                    });
-                });
-
                 mostrarCamiones(camiones);
                 actualizarEstadisticas(camiones);
 
@@ -384,17 +340,10 @@
         function mostrarCamiones(camiones) {
             const tbody = document.getElementById('camiones-table-body');
             
-            if (!tbody) {
-                console.error('❌ No se encontró el elemento camiones-table-body');
-                return;
-            }
-
-            console.log('🔍 Mostrando camiones en tabla:', camiones);
-
             if (camiones.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" style="text-align: center; padding: 20px; color: #666;">
+                        <td colspan="8" style="text-align: center; padding: 20px; color: #666;">
                             📋 No hay camiones registrados
                         </td>
                     </tr>
@@ -402,66 +351,67 @@
                 return;
             }
 
-            tbody.innerHTML = camiones.map((camion, index) => {
-                console.log(`🔧 Procesando camión ${index + 1} para mostrar:`, camion);
-                console.log(`🔍 Estado del camión ${camion.camionId}:`, camion.estado, typeof camion.estado);
-                
-                // Asegurar que el estado tenga un valor
-                const estado = camion.estado || 'activo';
-                console.log(`🎯 Estado final para ${camion.camionId}:`, estado);
-                
+            tbody.innerHTML = camiones.map(camion => {
                 const estadoClass = {
-                    'activo': 'badge-success',
-                    'mantenimiento': 'badge-warning',
-                    'inactivo': 'badge-error'
-                }[estado] || 'badge-info';
+                    'disponible': 'badge-success',
+                    'en_ruta': 'badge-warning',
+                    'mantenimiento': 'badge-error',
+                    'fuera_servicio': 'badge-info'
+                }[camion.estado] || 'badge-info';
 
                 const estadoIcon = {
-                    'activo': 'fas fa-check-circle',
-                    'mantenimiento': 'fas fa-tools',
-                    'inactivo': 'fas fa-pause-circle'
-                }[estado] || 'fas fa-info-circle';
-
-                console.log(`🎨 Clases CSS para ${camion.camionId}:`, { estadoClass, estadoIcon });
+                    'disponible': 'fas fa-check-circle',
+                    'en_ruta': 'fas fa-road',
+                    'mantenimiento': 'fas fa-wrench',
+                    'fuera_servicio': 'fas fa-times-circle'
+                }[camion.estado] || 'fas fa-info-circle';
 
                 return `
                     <tr>
                         <td><strong>${camion.camionId}</strong></td>
                         <td>${camion.marca}</td>
                         <td>${camion.modelo}</td>
-                        <td>${camion.capacidad.toLocaleString()} L</td>
+                        <td>${camion.anio}</td>
+                        <td>${camion.placa || 'N/A'}</td>
+                        <td><strong>${camion.capacidad} L</strong></td>
                         <td>
                             <span class="badge ${estadoClass}">
-                                <i class="${estadoIcon}"></i> ${estado}
+                                <i class="${estadoIcon}"></i> ${camion.estado}
                             </span>
                         </td>
                         <td>
-                            <button class="btn-icon btn-edit" onclick="abrirModalEditarCamion(${JSON.stringify(camion).replace(/"/g, '&quot;')})" title="Editar">
+                            <button class="btn-small btn-warning" onclick="editarCamion(${camion.id})">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn-icon btn-delete" onclick="confirmarEliminarCamion(${camion.id})" title="Eliminar">
+                            <button class="btn-small btn-danger" onclick="eliminarCamion(${camion.id})">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
                     </tr>
                 `;
             }).join('');
-
-            console.log(`✅ ${camiones.length} camiones mostrados correctamente en la tabla`);
         }
 
         function actualizarEstadisticas(camiones) {
             const total = camiones.length;
-            const activos = camiones.filter(c => (c.estado || 'activo') === 'activo').length;
-            const mantenimiento = camiones.filter(c => (c.estado || 'activo') === 'mantenimiento').length;
-            const inactivos = camiones.filter(c => (c.estado || 'activo') === 'inactivo').length;
-
-            console.log('📊 Estadísticas calculadas:', { total, activos, mantenimiento, inactivos });
+            const disponibles = camiones.filter(c => c.estado === 'disponible').length;
+            const enRuta = camiones.filter(c => c.estado === 'en_ruta').length;
+            const mantenimiento = camiones.filter(c => c.estado === 'mantenimiento').length;
 
             document.getElementById('total-camiones').textContent = total;
-            document.getElementById('camiones-activos').textContent = activos;
+            document.getElementById('camiones-disponibles').textContent = disponibles;
+            document.getElementById('camiones-ruta').textContent = enRuta;
             document.getElementById('camiones-mantenimiento').textContent = mantenimiento;
-            document.getElementById('camiones-inactivos').textContent = inactivos;
+        }
+
+        function abrirModal() {
+            document.getElementById('camion-modal').style.display = 'flex';
+        }
+
+        function cerrarModal() {
+            document.getElementById('camion-modal').style.display = 'none';
+            document.getElementById('camion-form').reset();
+            currentCamionId = null;
         }
 
         async function guardarCamion(event) {
@@ -474,128 +424,146 @@
 
             try {
                 const token = localStorage.getItem("token");
-                const API_BASE_URL = "http://localhost:3000/api";
-
-                const camionData = {
-                    camionId: document.getElementById('camion-id').value.trim().toUpperCase(),
-                    marca: document.getElementById('camion-marca').value.trim(),
-                    modelo: document.getElementById('camion-modelo').value.trim(),
-                    capacidad: parseInt(document.getElementById('camion-capacidad').value),
-                    estado: document.getElementById('camion-estado').value,
-                    notas: document.getElementById('camion-notas').value.trim() || null
+                const data = {
+                    camionId: document.getElementById('camion-id').value.trim(),
+                    placa: document.getElementById('placa').value.trim(),
+                    marca: document.getElementById('marca').value.trim(),
+                    modelo: document.getElementById('modelo').value.trim(),
+                    anio: parseInt(document.getElementById('anio').value),
+                    capacidad: parseFloat(document.getElementById('capacidad').value),
+                    tipoVehiculo: document.getElementById('tipo-vehiculo').value,
+                    observaciones: document.getElementById('observaciones').value.trim()
                 };
 
-                console.log('📤 Enviando datos del camión:', camionData);
-
-                const url = camionEditando 
-                    ? `${API_BASE_URL}/camiones/${camionEditando.id}`
+                const url = currentCamionId 
+                    ? `${API_BASE_URL}/camiones/${currentCamionId}`
                     : `${API_BASE_URL}/camiones`;
                 
-                const method = camionEditando ? 'PUT' : 'POST';
+                const method = currentCamionId ? 'PUT' : 'POST';
 
                 const response = await fetch(url, {
                     method: method,
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
+                        'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify(camionData),
+                    body: JSON.stringify(data)
                 });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = 'index.html';
+                    return;
+                }
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+                    throw new Error(errorData.message || `Error ${response.status}`);
                 }
 
-                const result = await response.json();
-                console.log('✅ Camión guardado:', result);
-
-                // Cerrar modal y recargar lista
                 cerrarModal();
                 await cargarCamiones();
-
-                // Mostrar mensaje de éxito
-                const accion = camionEditando ? 'actualizado' : 'creado';
-                showMessage(`✅ Camión ${accion} exitosamente`, 'success');
+                showMessage('✅ Camión guardado exitosamente', 'success');
 
             } catch (error) {
                 console.error('❌ Error al guardar camión:', error);
-                showMessage('❌ Error al guardar el camión: ' + error.message, 'error');
+                showMessage('❌ Error: ' + error.message, 'error');
             } finally {
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
             }
         }
 
-        function confirmarEliminarCamion(camionId) {
-            console.log('🗑️ Confirmando eliminación del camión ID:', camionId);
-            
-            document.getElementById('confirmation-message').textContent = 
-                '¿Está seguro que desea eliminar este camión? Esta acción no se puede deshacer.';
-            
-            accionConfirmacion = () => eliminarCamion(camionId);
-            document.getElementById('confirm-action').onclick = accionConfirmacion;
-            document.getElementById('confirmation-modal').style.display = 'block';
+        async function editarCamion(id) {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await fetch(`${API_BASE_URL}/camiones/${id}`, {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                if (!response.ok) throw new Error(`Error ${response.status}`);
+
+                const data = await response.json();
+                const camion = data.camion;
+
+                currentCamionId = id;
+                document.getElementById('modal-title').textContent = 'Editar Camión';
+                document.getElementById('camion-id').value = camion.camionId;
+                document.getElementById('placa').value = camion.placa || '';
+                document.getElementById('marca').value = camion.marca;
+                document.getElementById('modelo').value = camion.modelo;
+                document.getElementById('anio').value = camion.anio;
+                document.getElementById('capacidad').value = camion.capacidad;
+                document.getElementById('tipo-vehiculo').value = camion.tipoVehiculo || '';
+                document.getElementById('observaciones').value = camion.observaciones || '';
+
+                abrirModal();
+
+            } catch (error) {
+                console.error('❌ Error al cargar camión:', error);
+                showMessage('❌ Error: ' + error.message, 'error');
+            }
         }
 
-        async function eliminarCamion(camionId) {
-            try {
-                console.log('🗑️ Eliminando camión ID:', camionId);
-                
-                const token = localStorage.getItem("token");
-                const API_BASE_URL = "http://localhost:3000/api";
+        async function eliminarCamion(id) {
+            if (!confirm('¿Está seguro de que desea eliminar este camión?')) {
+                return;
+            }
 
-                const response = await fetch(`${API_BASE_URL}/camiones/${camionId}`, {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await fetch(`${API_BASE_URL}/camiones/${id}`, {
                     method: 'DELETE',
                     headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = 'index.html';
+                    return;
+                }
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+                    throw new Error(errorData.message || `Error ${response.status}`);
                 }
 
-                console.log('✅ Camión eliminado exitosamente');
-                
-                // Cerrar modal de confirmación
-                cerrarModalConfirmacion();
-                
-                // Recargar lista
                 await cargarCamiones();
-                
-                // Mostrar mensaje de éxito
                 showMessage('✅ Camión eliminado exitosamente', 'success');
 
             } catch (error) {
                 console.error('❌ Error al eliminar camión:', error);
-                showMessage('❌ Error al eliminar el camión: ' + error.message, 'error');
-                cerrarModalConfirmacion();
+                showMessage('❌ Error: ' + error.message, 'error');
             }
         }
 
         function mostrarError(mensaje) {
             const tbody = document.getElementById('camiones-table-body');
-            if (tbody) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" style="text-align: center; padding: 20px; color: red;">
-                            ❌ ${mensaje}
-                            <br><small>Revisa la consola para más detalles</small>
-                        </td>
-                    </tr>
-                `;
-            }
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 20px; color: red;">
+                        ❌ ${mensaje}
+                    </td>
+                </tr>
+            `;
         }
 
-        // Función para mostrar mensajes (reutilizada del registro.js)
         function showMessage(message, type = "info") {
-            // Remover mensajes anteriores
             const existingMessages = document.querySelectorAll(".floating-message");
             existingMessages.forEach((msg) => msg.remove());
 
-            // Crear elemento de mensaje
             const messageDiv = document.createElement("div");
             messageDiv.className = `floating-message message-${type}`;
             messageDiv.innerHTML = `
@@ -605,7 +573,6 @@
                 </div>
             `;
 
-            // Agregar estilos
             messageDiv.style.cssText = `
                 position: fixed;
                 top: 20px;
@@ -620,7 +587,6 @@
                 animation: slideIn 0.3s ease-out;
             `;
 
-            // Colores según el tipo
             if (type === "success") {
                 messageDiv.style.backgroundColor = "#4caf50";
             } else if (type === "error") {
@@ -629,10 +595,8 @@
                 messageDiv.style.backgroundColor = "#2196f3";
             }
 
-            // Agregar al DOM
             document.body.appendChild(messageDiv);
 
-            // Remover después de 5 segundos
             setTimeout(() => {
                 if (messageDiv.parentNode) {
                     messageDiv.style.animation = "slideIn 0.3s ease-out reverse";
@@ -646,8 +610,26 @@
         }
     </script>
 
-    <!-- Agregar estilos adicionales para los modales y botones -->
     <style>
+        .camiones-section {
+            margin-top: 30px;
+        }
+        
+        .camiones-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .actions-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -658,18 +640,22 @@
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
         }
 
         .modal-content {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            margin: 5% auto;
             padding: 0;
             border-radius: 15px;
             width: 90%;
-            max-width: 500px;
+            max-width: 600px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .modal-header {
@@ -680,6 +666,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .modal-header h2 {
@@ -709,62 +698,6 @@
 
         .modal-body {
             padding: 25px;
-        }
-
-        .actions-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            gap: 20px;
-        }
-
-        .btn-icon {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-icon:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-
-        .btn-edit {
-            background: #2196f3;
-            margin-right: 5px;
-        }
-
-        .btn-edit:hover {
-            background: #1976d2;
-        }
-
-        .btn-delete {
-            background: #f44336;
-        }
-
-        .btn-delete:hover {
-            background: #d32f2f;
-        }
-
-        .camiones-section {
-            margin-top: 30px;
-        }
-
-        .camiones-section h3 {
-            color: var(--primary-color);
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
         .badge {
@@ -797,20 +730,45 @@
             color: white; 
         }
 
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            margin: 2px;
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: #ff9800;
+        }
+
+        .btn-warning:hover {
+            background-color: #f57c00;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
         @keyframes slideIn {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
-            .actions-bar {
-                flex-direction: column;
-                align-items: stretch;
+            .modal-content {
+                width: 95%;
+                max-height: 95vh;
             }
-
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
+            
+            .modal {
+                padding: 10px;
             }
         }
     </style>

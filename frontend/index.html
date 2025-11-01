@@ -4,11 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PetroControl | Acceso al Sistema</title>
+    
+    <!-- ✅ AGREGAR FAVICON -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛽</text></svg>">
+    
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="auth.js"></script>
-        <script src="api.js"></script>
+    
+    <!-- Agregar configuración de API dinámica -->
+    <script src="config.js"></script>
 </head>
 <body class="login-body">
     <div class="login-container">
@@ -78,7 +82,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Limpiar valores iniciales
+            console.log('🚀 Sistema iniciado con API:', API_BASE_URL);
+            
             const allInputs = document.querySelectorAll('input');
             allInputs.forEach(input => {
                 input.value = '';
@@ -114,7 +119,7 @@
                 loginBtn.disabled = true;
 
                 try {
-                    const response = await fetch('http://localhost:3000/api/auth/login', {
+                    const response = await fetch(`${API_BASE_URL}/auth/login`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -143,20 +148,17 @@
 
             // Manejar cambio de pestañas
             function switchTab(tabName) {
-                // Actualizar pestañas
                 document.querySelectorAll('.auth-tab').forEach(tab => {
                     tab.classList.remove('active');
                 });
                 document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
                 
-                // Actualizar formularios
                 document.querySelectorAll('.auth-form').forEach(form => {
                     form.classList.remove('active');
                 });
                 document.getElementById(`${tabName}-form-container`).classList.add('active');
             }
 
-            // Manejar selección de rol
             function selectRole(role) {
                 document.querySelectorAll('.role-option').forEach(option => {
                     option.classList.remove('selected');
@@ -164,10 +166,9 @@
                 document.querySelector(`[data-role="${role}"]`).classList.add('selected');
             }
 
-            // Función de registro
             async function registerUser(userData) {
                 try {
-                    const response = await fetch('http://localhost:3000/api/auth/register', {
+                    const response = await fetch(`${API_BASE_URL}/auth/register`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -187,7 +188,6 @@
                 }
             }
 
-            // Configurar pestañas
             document.querySelectorAll('.auth-tab').forEach(tab => {
                 tab.addEventListener('click', function() {
                     const tabName = this.getAttribute('data-tab');
@@ -195,7 +195,6 @@
                 });
             });
 
-            // Configurar selector de rol
             document.querySelectorAll('.role-option').forEach(option => {
                 option.addEventListener('click', function() {
                     const role = this.getAttribute('data-role');
@@ -203,7 +202,6 @@
                 });
             });
 
-            // Configurar formulario de registro
             document.getElementById('register-form').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
@@ -216,7 +214,6 @@
                 const btnText = registerBtn.querySelector('.btn-text');
                 const spinner = document.getElementById('register-loading');
 
-                // Validaciones
                 if (!username || !password || !confirmPassword) {
                     showMessage('error', 'Por favor complete todos los campos');
                     return;
@@ -237,7 +234,6 @@
                     return;
                 }
 
-                // Mostrar loading
                 btnText.style.display = 'none';
                 spinner.style.display = 'inline-block';
                 registerBtn.disabled = true;
@@ -251,9 +247,8 @@
 
                     showMessage('success', 'Usuario registrado exitosamente. Ahora puede iniciar sesión.');
                     
-                    // Limpiar formulario y cambiar a login
                     document.getElementById('register-form').reset();
-                    selectRole('operador'); // Reset role selection
+                    selectRole('operador');
                     setTimeout(() => {
                         switchTab('login');
                     }, 2000);

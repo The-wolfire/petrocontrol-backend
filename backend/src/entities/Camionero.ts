@@ -6,43 +6,43 @@ export class Camionero {
   @PrimaryGeneratedColumn()
   id!: number
 
-  @Column()
+  @Column({ type: "varchar" })
   nombre!: string
 
-  @Column()
+  @Column({ type: "varchar" })
   apellido!: string
 
-  @Column({ unique: true })
+  @Column({ type: "varchar", unique: true })
   cedula!: string
 
-  @Column()
+  @Column({ type: "varchar" })
   licencia!: string
 
-  @Column()
+  @Column({ type: "varchar" })
   telefono!: string
 
-  @Column({ nullable: true })
+  @Column({ type: "varchar", nullable: true })
   email!: string | null
 
-  @Column({ type: "date" })
+  @Column({ type: "date" }) // ✅ CORREGIDO
   fechaNacimiento!: Date
 
-  @Column({ type: "date", default: () => "CURRENT_DATE" })
+  @Column({ type: "date", default: () => "CURRENT_DATE" }) // ✅ CORREGIDO
   fechaIngreso!: Date
 
-  @Column({ type: "date", nullable: true })
+  @Column({ type: "date", nullable: true }) // ✅ CORREGIDO
   fechaVencimientoLicencia!: Date | null
 
-  @Column({ default: "activo" })
+  @Column({ type: "varchar", default: "activo" })
   estado!: string
 
-  @Column({ default: 0 })
+  @Column({ type: "int", default: 0 })
   horasConducidas!: number
 
-  @Column({ default: false })
+  @Column({ type: "boolean", default: false })
   enDescanso!: boolean
 
-  @Column({ nullable: true, type: "text" })
+  @Column({ type: "text", nullable: true })
   observaciones!: string | null
 
   // ✅ Relación con Viajes

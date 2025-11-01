@@ -51,11 +51,11 @@ export class Viaje {
   @Column("decimal", { precision: 10, scale: 2, nullable: true })
   cargaKg!: number | null
 
-  @Column({ type: "timestamp" })
-  fechaSalida!: Date
+@Column({ type: "timestamp" }) 
+fechaSalida!: Date
 
-  @Column({ type: "timestamp", nullable: true })
-  fechaLlegada!: Date | null
+@Column({ type: "timestamp", nullable: true }) 
+fechaLlegada!: Date | null
 
   @Column({ default: "en_curso" })
   estado!: string

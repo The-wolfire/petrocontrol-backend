@@ -6,8 +6,9 @@
     <title>PetroControl | Dashboard</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="auth.js"></script>
-<script src="api.js"></script>
+    
+    <!-- Agregar configuración de API dinámica -->
+    <script src="config.js"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -126,8 +127,16 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Dashboard cargado');
+            console.log('🚀 Dashboard cargado con API:', API_BASE_URL);
             
+            if (!verificarAutenticacion()) {
+                return;
+            }
+            
+            loadStats();
+        });
+
+        function verificarAutenticacion() {
             const token = localStorage.getItem("token");
             console.log('🔑 Token encontrado:', token ? 'Sí' : 'No');
             
@@ -135,14 +144,13 @@
                 console.log('❌ No hay token, redirigiendo al login');
                 alert("No estás autenticado. Redirigiendo al login...");
                 window.location.href = "index.html";
-                return;
+                return false;
             }
             
             console.log('✅ Token válido, usuario autenticado');
             
-            // Decodificar token para obtener info del usuario
             try {
-                const decoded = JSON.parse(atob(token));
+                const decoded = JSON.parse(atob(token.split('.')[1]));
                 console.log('👤 Usuario decodificado:', decoded);
                 
                 const userNameElement = document.getElementById('user-name');
@@ -151,27 +159,28 @@
                 }
             } catch (error) {
                 console.error('❌ Error decodificando token:', error);
-                localStorage.removeItem('token');
-                window.location.href = 'index.html';
-                return;
+                const userNameElement = document.getElementById('user-name');
+                if (userNameElement) {
+                    userNameElement.textContent = 'Usuario';
+                }
             }
 
-            // Cargar estadísticas básicas
-            loadStats();
-        });
+            return true;
+        }
 
         function logout() {
             console.log('🚪 Cerrando sesión');
-            localStorage.removeItem('token');
-            window.location.href = 'index.html';
+            if (confirm('¿Está seguro de que desea cerrar sesión?')) {
+                localStorage.removeItem('token');
+                window.location.href = 'index.html';
+            }
         }
 
         async function loadStats() {
             try {
                 const token = localStorage.getItem('token');
                 
-                // Cargar registros para estadísticas
-                const response = await fetch('http://localhost:3000/api/registros', {
+                const response = await fetch(`${API_BASE_URL}/registros`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -181,7 +190,6 @@
                     const data = await response.json();
                     const registros = data.registros || [];
                     
-                    // Actualizar estadísticas
                     document.getElementById('registros-hoy').textContent = registros.length;
                     
                     const totalCombustible = registros.reduce((total, reg) => {
@@ -191,8 +199,7 @@
                     document.getElementById('total-combustible').textContent = totalCombustible.toFixed(2) + ' L';
                 }
 
-                // Cargar camiones para contador
-                const camionesResponse = await fetch('http://localhost:3000/api/camiones', {
+                const camionesResponse = await fetch(`${API_BASE_URL}/camiones`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
