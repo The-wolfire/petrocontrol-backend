@@ -10,14 +10,18 @@ import { Viaje } from "../entities/Viaje"
 
 dotenv.config()
 
-// En data-source.ts:
+// ... (imports y dotenv.config())
+
 const isProduction = process.env.NODE_ENV === "production"
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  // Para producción en Vercel, usa DATABASE_URL
-  url: isProduction ? process.env.DATABASE_URL : undefined, 
-  ssl: isProduction ? { rejectUnauthorized: false } : false, // Esto es correcto y necesario
+  
+  //CAMBIO CLAVE: Usa POSTGRES_URL, que Vercel inyecta automáticamente.
+  url: isProduction ? process.env.POSTGRES_URL : undefined, 
+  ssl: isProduction ? { rejectUnauthorized: false } : false, 
+  
+  // Las demás variables son para el entorno local (Docker/development)
   host: !isProduction ? process.env.DB_HOST : undefined,
   port: !isProduction ? parseInt(process.env.DB_PORT || "5432") : undefined,
   username: !isProduction ? process.env.DB_USERNAME : undefined,
@@ -26,7 +30,7 @@ export const AppDataSource = new DataSource({
   
   synchronize: !isProduction, // Solo en desarrollo
   logging: !isProduction,
-  entities: [Usuario, Camion, RegistroES, Camionero, Mantenimiento, Viaje],
+  entities: [/* Tus Entidades */],
   migrations: ["src/migrations/*.ts"],
   extra: {
     connectionLimit: 5,
