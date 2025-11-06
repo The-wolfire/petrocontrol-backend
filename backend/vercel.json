@@ -1,18 +1,35 @@
 {
   "version": 2,
+  {
+  "version": 2,
+  
+  // ✅ MANTENER LA SECCIÓN BUILDS
+  "builds": [
+    {
+      "src": "src/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "src/index.ts"
+      "dest": "src/index.ts" 
     },
     {
       "src": "/(.*)",
       "dest": "frontend/$1"
     }
-  ],
-  "functions": {
-    "src/index.ts": {
-      "maxDuration": 30
+  ]
+}
+"routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "src/index.ts" 
+    },
+    {
+      "src": "/(.*)",
+      "dest": "frontend/$1"
     }
-  }
+  ]
 }
