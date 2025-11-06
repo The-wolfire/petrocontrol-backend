@@ -23,6 +23,9 @@
     "typeorm": "^0.3.20"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/express": "^5.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.10.2",
     "@types/pg": "^8.10.7",
     "ts-node": "^10.9.2",
