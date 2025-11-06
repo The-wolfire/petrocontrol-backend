@@ -7,7 +7,6 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "seed": "ts-node src/scripts/seed-database.ts",
     "vercel-build": "npm run build"
   },
   "dependencies": {
