@@ -1,9 +1,6 @@
 {
   "version": 2,
-  {
-  "version": 2,
   
-  // ✅ MANTENER LA SECCIÓN BUILDS
   "builds": [
     {
       "src": "src/index.ts",
@@ -12,17 +9,6 @@
   ],
   
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "src/index.ts" 
-    },
-    {
-      "src": "/(.*)",
-      "dest": "frontend/$1"
-    }
-  ]
-}
-"routes": [
     {
       "src": "/api/(.*)",
       "dest": "src/index.ts" 
