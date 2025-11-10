@@ -3,15 +3,20 @@
   "version": "1.0.0",
   "main": "script.js",
   "scripts": {
-    "dev": "live-server --port=5173 --open=/index.html",
-    "build": "echo 'Build completed'",
-    "start": "live-server --port=5173",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
+  "dependencies": {
+    "next": "última versión", 
+    "react": "última versión",
+    "react-dom": "última versión"
+  },
   "devDependencies": {
     "live-server": "^1.2.2"
   }
