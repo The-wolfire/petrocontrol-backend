@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "backend/src/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "backend/src/index.ts" 
+    }
+  ],
+  "functions": {
+    "backend/src/index.ts": { 
+      "maxDuration": 30
+    }
+  }
+}
