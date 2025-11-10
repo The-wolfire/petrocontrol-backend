@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Agregar configuración de API dinámica -->
     <script src="config.js"></script>
 </head>
 <body class="login-body">
@@ -21,200 +20,205 @@
                 <p>Acceso al Sistema</p>
             </div>
 
-            <!-- Pestañas de navegación -->
             <div class="auth-tabs">
                 <button class="auth-tab active" data-tab="login">
                     <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
                 </button>
                 <button class="auth-tab" data-tab="register">
-                    <i class="fas fa-user-plus"></i> Registrarse
+                    <i class="fas fa-user-plus"></i> Registrar
                 </button>
             </div>
 
-            <!-- Formulario de Login -->
-            <div id="login-form-container" class="auth-form active">
-                <form id="login-form">
-                    <div class="input-group">
-                        <i class="fas fa-user"></i>
-                        <input type="text" id="username" placeholder="Ingrese su usuario" required autocomplete="off">
-                    </div>
-                    <div class="input-group">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="password" placeholder="Ingrese su contraseña" required autocomplete="off">
-                    </div>
-                    <button type="submit" class="btn-primary" id="login-btn">
-                        <span class="btn-text">Iniciar Sesión</span>
-                        <i class="fas fa-spinner fa-spin" id="loading-spinner" style="display: none;"></i>
-                    </button>
-                </form>
-            </div>
-
-            <!-- Formulario de Registro -->
-            <div id="register-form-container" class="auth-form">
-                <form id="register-form">
-                    <div class="input-group">
-                        <i class="fas fa-user"></i>
-                        <input type="text" id="reg-username" placeholder="Ingrese su usuario" required autocomplete="off">
-                    </div>
-                    <div class="input-group">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="reg-password" placeholder="Ingrese su contraseña" required autocomplete="off">
-                    </div>
-                    <div class="input-group">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="reg-confirm-password" placeholder="Ingrese su contraseña para la verificación" required autocomplete="off">
-                    </div>
-                    <div class="role-selector">
-                        <div class="role-option selected" data-role="operador">
-                            <i class="fas fa-user"></i>
-                            <div>Operador</div>
+            <div class="auth-content">
+                <div class="auth-form" id="login-tab">
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="login-username">Usuario</label>
+                            <div class="input-icon-group">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="login-username" placeholder="Nombre de usuario" required>
+                            </div>
                         </div>
-                    </div>
-                    <button type="submit" class="btn-primary" id="register-btn">
-                        <span class="btn-text">Registrarse</span>
-                        <i class="fas fa-spinner fa-spin" id="register-loading" style="display: none;"></i>
-                    </button>
-                </form>
+                        <div class="form-group">
+                            <label for="login-password">Contraseña</label>
+                            <div class="input-icon-group">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="login-password" placeholder="Contraseña" required>
+                            </div>
+                        </div>
+                        <button type="submit" id="login-btn" class="btn btn-primary">
+                            <span id="login-btn-text">Iniciar Sesión</span>
+                            <span id="login-spinner" class="spinner"><i class="fas fa-spinner fa-spin"></i></span>
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="auth-form" id="register-tab" style="display: none;">
+                    <form id="register-form">
+                        <div class="form-group">
+                            <label for="register-username">Usuario</label>
+                            <div class="input-icon-group">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="register-username" placeholder="Nombre de usuario" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password">Contraseña</label>
+                            <div class="input-icon-group">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="register-password" placeholder="Contraseña" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-confirm-password">Confirmar Contraseña</label>
+                            <div class="input-icon-group">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" id="register-confirm-password" placeholder="Repetir contraseña" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-role">Rol</label>
+                            <div class="role-selector" id="role-selector">
+                                <button type="button" class="role-btn active" data-role="operador">Operador</button>
+                                <button type="button" class="role-btn" data-role="admin">Administrador</button>
+                            </div>
+                        </div>
+                        <button type="submit" id="register-btn" class="btn btn-secondary">
+                            <span id="register-btn-text">Registrar</span>
+                            <span id="register-spinner" class="spinner"><i class="fas fa-spinner fa-spin"></i></span>
+                        </button>
+                    </form>
+                </div>
+
+                <div id="message-container" class="message-container"></div>
             </div>
         </div>
     </div>
-
+    
+    <script src="api.js"></script>
+    <script src="script.js"></script>
+    
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Sistema iniciado con API:', API_BASE_URL);
-            
-            const allInputs = document.querySelectorAll('input');
-            allInputs.forEach(input => {
-                input.value = '';
-                input.setAttribute('autocomplete', 'off');
-            });
+        // Lógica de navegación entre pestañas (Login/Register)
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.auth-tab');
+            const authContents = document.querySelectorAll('.auth-form');
 
-            const loginForm = document.getElementById('login-form');
-            const loginBtn = document.getElementById('login-btn');
-            const loadingSpinner = document.getElementById('loading-spinner');
-
-            function showMessage(type, message) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message message-${type}`;
-                messageDiv.textContent = message;
-
-                const loginCard = document.querySelector('.login-card');
-                loginCard.insertBefore(messageDiv, loginCard.firstChild);
-
-                setTimeout(() => {
-                    messageDiv.remove();
-                }, 3000);
-            }
-
-            loginForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-                const btnText = loginBtn.querySelector('.btn-text');
-
-                btnText.style.display = 'none';
-                loadingSpinner.style.display = 'inline-block';
-                loginBtn.disabled = true;
-
-                try {
-                    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ username, password })
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.message || 'Error en el inicio de sesión');
+            const switchTab = (tabId) => {
+                tabs.forEach(tab => {
+                    if (tab.getAttribute('data-tab') === tabId) {
+                        tab.classList.add('active');
+                    } else {
+                        tab.classList.remove('active');
                     }
-
-                    const data = await response.json();
-                    localStorage.setItem('token', data.token);
-                    window.location.href = 'dashboard.html';
-
-                } catch (error) {
-                    console.error("Error en el inicio de sesión:", error);
-                    showMessage('error', error.message);
-                } finally {
-                    btnText.style.display = 'inline';
-                    loadingSpinner.style.display = 'none';
-                    loginBtn.disabled = false;
-                }
-            });
-
-            // Manejar cambio de pestañas
-            function switchTab(tabName) {
-                document.querySelectorAll('.auth-tab').forEach(tab => {
-                    tab.classList.remove('active');
                 });
-                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-                
-                document.querySelectorAll('.auth-form').forEach(form => {
-                    form.classList.remove('active');
-                });
-                document.getElementById(`${tabName}-form-container`).classList.add('active');
-            }
 
-            function selectRole(role) {
-                document.querySelectorAll('.role-option').forEach(option => {
-                    option.classList.remove('selected');
-                });
-                document.querySelector(`[data-role="${role}"]`).classList.add('selected');
-            }
-
-            async function registerUser(userData) {
-                try {
-                    const response = await fetch(`${API_BASE_URL}/auth/register`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(userData)
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.text();
-                        throw new Error(errorData || 'Error en el registro');
+                authContents.forEach(content => {
+                    if (content.id === `${tabId}-tab`) {
+                        content.style.display = 'block';
+                    } else {
+                        content.style.display = 'none';
                     }
+                });
+            };
 
-                    const data = await response.json();
-                    return data;
-                } catch (error) {
-                    throw error;
-                }
-            }
-
-            document.querySelectorAll('.auth-tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tabName = this.getAttribute('data-tab');
-                    switchTab(tabName);
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    switchTab(tabId);
                 });
             });
 
-            document.querySelectorAll('.role-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    const role = this.getAttribute('data-role');
+            // Lógica para el selector de rol
+            const roleButtons = document.querySelectorAll('.role-btn');
+            let selectedRole = 'operador'; // Valor por defecto
+
+            const selectRole = (role) => {
+                selectedRole = role;
+                roleButtons.forEach(btn => {
+                    if (btn.getAttribute('data-role') === role) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            };
+
+            roleButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const role = btn.getAttribute('data-role');
                     selectRole(role);
                 });
             });
 
-            document.getElementById('register-form').addEventListener('submit', async function(e) {
+
+            // Lógica de mensaje
+            const messageContainer = document.getElementById('message-container');
+            const showMessage = (type, message) => {
+                messageContainer.innerHTML = `<div class="message ${type}">${message}</div>`;
+                setTimeout(() => {
+                    messageContainer.innerHTML = '';
+                }, 5000);
+            };
+
+            // ----------------------------------------------------
+            // LÓGICA DE INICIO DE SESIÓN
+            // ----------------------------------------------------
+            const loginForm = document.getElementById('login-form');
+            const loginBtn = document.getElementById('login-btn');
+            const loginBtnText = document.getElementById('login-btn-text');
+            const loginSpinner = document.getElementById('login-spinner');
+
+            loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                
-                const username = document.getElementById('reg-username').value.trim();
-                const password = document.getElementById('reg-password').value;
-                const confirmPassword = document.getElementById('reg-confirm-password').value;
-                const selectedRole = document.querySelector('.role-option.selected').getAttribute('data-role');
-                
-                const registerBtn = document.getElementById('register-btn');
-                const btnText = registerBtn.querySelector('.btn-text');
-                const spinner = document.getElementById('register-loading');
+                const username = document.getElementById('login-username').value.trim();
+                const password = document.getElementById('login-password').value;
+
+                if (!username || !password) {
+                    showMessage('error', 'Por favor, ingrese usuario y contraseña');
+                    return;
+                }
+
+                loginBtnText.style.display = 'none';
+                loginSpinner.style.display = 'inline-block';
+                loginBtn.disabled = true;
+
+                try {
+                    const data = await loginUser(username, password);
+                    // Guardar token y redirigir
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('userRole', data.role);
+                    
+                    window.location.href = 'dashboard.html';
+
+                } catch (error) {
+                    console.error("Error en login:", error);
+                    // Aquí es donde el NetworkError ocurre.
+                    showMessage('error', error.message || 'Credenciales inválidas o Error de conexión');
+                } finally {
+                    loginBtnText.style.display = 'inline';
+                    loginSpinner.style.display = 'none';
+                    loginBtn.disabled = false;
+                }
+            });
+
+
+            // ----------------------------------------------------
+            // LÓGICA DE REGISTRO
+            // ----------------------------------------------------
+            const registerForm = document.getElementById('register-form');
+            const registerBtn = document.getElementById('register-btn');
+            const btnText = document.getElementById('register-btn-text');
+            const spinner = document.getElementById('register-spinner');
+
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('register-username').value.trim();
+                const password = document.getElementById('register-password').value;
+                const confirmPassword = document.getElementById('register-confirm-password').value;
 
                 if (!username || !password || !confirmPassword) {
-                    showMessage('error', 'Por favor complete todos los campos');
+                    showMessage('error', 'Todos los campos son obligatorios');
                     return;
                 }
 
