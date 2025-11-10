@@ -15,5 +15,8 @@
     "resolveJsonModule": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "../frontend"]
+  "exclude": [
+    "node_modules",
+    "src/scripts" 
+  ]
 }
