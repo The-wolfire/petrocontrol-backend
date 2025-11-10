@@ -13,9 +13,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "next": "última versión", 
-    "react": "última versión",
-    "react-dom": "última versión"
+    "next": "latest", 
+    "react": "latest",
+    "react-dom": "latest"
   },
   "devDependencies": {
     "live-server": "^1.2.2"
