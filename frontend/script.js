@@ -1,7 +1,3 @@
-// =========================
-// Configuración Base
-// =========================
-// Función central para llamadas API (redefinida para usar el token correcto)
 async function apiCall(endpoint, options = {}) {
   // index.html usa 'token', script.js usa 'authToken'. Unificamos.
   const token = localStorage.getItem("token") || localStorage.getItem("authToken"); 
@@ -11,7 +7,7 @@ async function apiCall(endpoint, options = {}) {
   };
 
   try {
-    // ✅ USA LA VARIABLE GLOBAL CORRECTA DE config.js
+    //  USA LA VARIABLE GLOBAL CORRECTA DE config.js
     const res = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
     
     if (res.status === 401) {

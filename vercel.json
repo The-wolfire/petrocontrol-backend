@@ -9,6 +9,16 @@
   "routes": [
     {
       "src": "/api/(.*)",
+      "methods": ["OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+        "Access-Control-Allow-Headers": "Authorization, Content-Type"
+      },
+      "dest": "backend/src/index.ts"
+    },
+    {
+      "src": "/api/(.*)",
       "dest": "backend/src/index.ts" 
     }
   ]
