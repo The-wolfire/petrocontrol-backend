@@ -25,12 +25,16 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "https://petrocontrol-frontend.
 const allowedOrigins = [
   FRONTEND_URL,
   "https://petrocontrol-frontend.vercel.app",
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-  "http://localhost:3000",
-  // Añadir subdominio temporal de Vercel como comodín
-  "https://*.the-wolfires-projects.vercel.app", 
+  // ...
 ];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+  })
+);
 
 // ═══════════════════════════════════════════════════════════════════
 // 🎯 PATRÓN SERVERLESS: INICIALIZACIÓN DE DB EN EL ALCANCE GLOBAL
@@ -68,25 +72,23 @@ app.use(
 // APLICACIÓN DE RUTAS (LIMPIA)
 // ═══════════════════════════════════════════════════════════════════
 
-// Rutas principales
-app.use("/routes", authRoutes);
-app.use("/routes", camionRoutes);
-app.use("/routes", registroRoutes);
-app.use("/rotres", camioneroRoutes);
-app.use("/routes", mantenimientoRoutes);
-app.use("/routes", inventarioRoutes);
+// ✅ Rutas principales CORREGIDAS
+app.use("/auth", authRoutes); // Antes: /routes
+app.use("/camiones", camionRoutes); // Antes: /routes
+app.use("/registros", registroRoutes); // Antes: /routes
+app.use("/camioneros", camioneroRoutes); // Antes: /rotres
+app.use("/mantenimientos", mantenimientoRoutes); // Antes: /routes
+app.use("/inventario", inventarioRoutes); // Antes: /routes
 
-// Ruta base
+// Rutas base
 app.get("/", (_req: Request, res: Response) => {
   res.send("Servidor PetroControl operativo.");
 });
 
-app.get("/", (_req: Request, res: Response) => {
-  res.send("Servidor PetroControl operativo. Rutas cargadas.");
-});
+// El segundo app.get("/") es redundante, puedes dejar solo uno.
 
 // ═══════════════════════════════════════════════════════════════════
-// ✅ EXPORTAR EL OBJETO EXPRESS PARA VERCEL
+//  EXPORTAR EL OBJETO EXPRESS PARA VERCEL
 // ═══════════════════════════════════════════════════════════════════
 
 export default app;
