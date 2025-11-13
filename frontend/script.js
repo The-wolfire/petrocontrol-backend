@@ -2,9 +2,13 @@
 // Configuración Base
 // =========================
 
-// Función central para llamadas API
+// ❌ ELIMINADO: const API_BASE_URL = ...
+// ¡La variable API_BASE_URL ya viene de config.js!
+
+// Función central para llamadas API (redefinida para usar el token correcto)
 async function apiCall(endpoint, options = {}) {
-  const token = localStorage.getItem("authToken"); // Tu script.js usa 'authToken'
+  // index.html usa 'token', script.js usa 'authToken'. Unificamos.
+  const token = localStorage.getItem("token") || localStorage.getItem("authToken"); 
   const headers = {
     "Content-Type": "application/json",
     ...(token ? { "Authorization": `Bearer ${token}` } : {})
@@ -13,6 +17,12 @@ async function apiCall(endpoint, options = {}) {
   try {
     // ✅ USA LA VARIABLE GLOBAL CORRECTA DE config.js
     const res = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+    
+    if (res.status === 401) {
+        handleLogout(); // Si el token es inválido, desloguear
+        throw new Error('Sesión expirada o inválida');
+    }
+
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.message || "Error en la petición");
     return data;
@@ -25,7 +35,6 @@ async function apiCall(endpoint, options = {}) {
 // =========================
 // Login (Referenciado desde index.html)
 // =========================
-// Estas funciones son necesarias para el script inline de index.html
 async function loginUser(username, password) {
   return await apiCall("/auth/login", {
     method: "POST",
@@ -50,20 +59,19 @@ function handleLogout() {
   localStorage.removeItem("authToken"); //
   localStorage.removeItem("currentUser");
   localStorage.removeItem("userRole");
-  localStorage.removeItem("userId");
-  localStorage.removeItem("token"); // (Limpiamos ambos por si acaso)
+  localStorage.removeItem("token"); //
   window.location.href = "index.html";
 }
 
 // =========================
-// Cargar registros
+// Cargar registros (usado en otras páginas)
 // =========================
 async function cargarRegistros() {
   try {
     const registros = await apiCall("/registros"); //
     const tbody = document.querySelector("#tabla-registros tbody");
     if (!tbody) return;
-    tbody.innerHTML = "";
+    tbody.innerHTML = ""; // Limpiar tabla
 
     registros.forEach(reg => {
       const row = document.createElement("tr");
@@ -75,39 +83,15 @@ async function cargarRegistros() {
       tbody.appendChild(row);
     });
   } catch (err) {
-    // No usamos showMessage aquí porque el index.html no tiene el div 'message'
     console.error('Error al cargar registros.');
   }
-}
-
-// =========================
-// Inicializar formularios de registro
-// =========================
-// NO inicializar formularios aquí, index.html ya lo hace.
-// document.getElementById("login-form")?.addEventListener("submit", handleLogin);
-// document.getElementById("register-form")?.addEventListener("submit", handleRegister);
-// document.getElementById("logout-btn")?.addEventListener("click", handleLogout);
-
-
-// =========================
-// Mostrar mensajes
-// =========================
-// Esta función es llamada por el script inline de index.html
-function showMessage(type, text) {
-  const msgDiv = document.getElementById("message-container"); //
-  if (!msgDiv) {
-    alert(text);
-    return;
-  }
-  msgDiv.innerHTML = `<div class="message ${type}">${text}</div>`;
-  setTimeout(() => (msgDiv.innerHTML = ""), 5000); //
 }
 
 // =========================
 // Protección de rutas
 // =========================
 function checkAuth() {
-  const token = localStorage.getItem("token") || localStorage.getItem("authToken"); // Revisamos ambos tokens
+  const token = localStorage.getItem("token") || localStorage.getItem("authToken");
   if (!token && !window.location.pathname.endsWith("index.html")) {
     window.location.href = "index.html";
   }
@@ -117,12 +101,17 @@ function checkAuth() {
 // Inicializar al cargar
 // =========================
 document.addEventListener("DOMContentLoaded", () => {
+  // La lógica de login/register ya está en el script inline de index.html
+  // Solo necesitamos checkAuth y el botón de logout
+  
   checkAuth();
-  // Asignar Logout si el botón existe
+  
   const logoutBtn = document.getElementById("logout-btn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", handleLogout);
   }
-  
-  // La lógica de login/register ya está en el script inline de index.html
 });
+
+// NOTA: La función showMessage está definida en el script inline de index.html
+// y también en el script.js original.
+// La versión de index.html es la que se usa en esa página.

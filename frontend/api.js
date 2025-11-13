@@ -1,9 +1,13 @@
 // api.js
+
+// ¡NO DEFINIR BaseURL aquí!
+// Ya está definida en config.js, que se carga primero en index.html
+
 class ApiService {
-    //static baseURL = 'http://localhost:3000/api';
+    // static baseURL = 'http://localhost:3000/api'; // <-- ELIMINADO
 
     static async request(endpoint, options = {}) {
-        const token = AuthManager.getToken();
+        const token = AuthManager.getToken(); // Asumimos que AuthManager está en script.js
         
         const config = {
             headers: {
@@ -15,9 +19,9 @@ class ApiService {
         };
 
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+            // ✅ USA LA VARIABLE GLOBAL CORRECTA DE config.js
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, config); 
             
-            // Si no está autorizado, redirigir al login
             if (response.status === 401) {
                 AuthManager.redirectToLogin(); // Asumimos que AuthManager existe
                 throw new Error('No autorizado');
@@ -39,55 +43,23 @@ class ApiService {
         }
     }
 
-    // Métodos específicos para cada entidad
-    static async getRegistros() {
-        return this.request('/registros');
-    }
-
-static async createRegistro(data) {
-        return this.request('/registros', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-    }
-
-    static async getCamiones() {
-        return this.request('/camiones');
-    }
-
-// ... (el resto de los métodos de api.js siguen igual)
-    static async createCamion(data) {
-        return this.request('/camiones', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-    }
-
-    static async getCamioneros() {
-        return this.request('/camioneros');
-    }
-
-    static async createCamionero(data) {
-        return this.request('/camioneros', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-    }
-
-    static async getMantenimientos() {
-        return this.request('/mantenimientos');
-    }
-
-    static async createMantenimiento(data) {
-        return this.request('/mantenimientos', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-    }
+    // Métodos específicos (el resto de tu archivo api.js)
+    static async getRegistros() { return this.request('/registros'); }
+    static async createRegistro(data) { return this.request('/registros', { method: 'POST', body: JSON.stringify(data) }); }
+    static async getCamiones() { return this.request('/camiones'); }
+    static async createCamion(data) { return this.request('/camiones', { method: 'POST', body: JSON.stringify(data) }); }
+    static async getCamioneros() { return this.request('/camioneros'); }
+    static async createCamionero(data) { return this.request('/camioneros', { method: 'POST', body: JSON.stringify(data) }); }
+    static async getMantenimientos() { return this.request('/mantenimientos'); }
+    static async createMantenimiento(data) { return this.request('/mantenimientos', { method: 'POST', body: JSON.stringify(data) }); }
 }
 
-// Asumimos que AuthManager está definido en script.js o aquí
+// Manager simple para manejar el token (usado por ApiService)
 const AuthManager = {
-    getToken: () => localStorage.getItem('token'),
-    redirectToLogin: () => window.location.href = 'index.html'
+    getToken: () => localStorage.getItem('token') || localStorage.getItem('authToken'), //
+    redirectToLogin: () => {
+        if (!window.location.pathname.endsWith("index.html")) {
+            window.location.href = 'index.html';
+        }
+    }
 };
