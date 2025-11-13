@@ -5,7 +5,6 @@ const BACKEND_PROD_URL = "https://petrocontrol-backend.vercel.app/api";
 
 const API_CONFIG = {
   getBaseURL: () => {
-    // Si estamos en localhost o 127.0.0.1, usar el servidor local
     if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
       return "http://localhost:3000/api"
     }

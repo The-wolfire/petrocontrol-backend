@@ -24,7 +24,7 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "https://petrocontrol-frontend.
 // Lista de orígenes permitidos
 const allowedOrigins = [
   FRONTEND_URL,
-  "https://petrocontrol-frontend.vercel.app", 
+  "https://petrocontrol-frontend.vercel.app",
   "http://localhost:5173",
   "http://127.0.0.1:5173",
   "http://localhost:3000",
@@ -58,9 +58,8 @@ app.use(helmet());
 // Configuración de CORS
 app.use(
   cors({
-    // ✅ CLAVE: Usar la variable de entorno, y si falla, usar la URL absoluta
-    origin: FRONTEND_URL, 
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], 
+    origin: allowedOrigins, // Usa el array de orígenes
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Asegúrate de incluir OPTIONS
     credentials: true,
   })
 );
