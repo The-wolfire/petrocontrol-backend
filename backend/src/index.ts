@@ -25,6 +25,8 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://127.0.0.1:5500"
 
 const allowedOrigins = [
   FRONTEND_URL,
+  // AÑADIR ESTA LÍNEA DE FORMA EXPLÍCITA (SOLUCIÓN FINAL DE CORS)
+  "https://petrocontrol-frontend.vercel.app", 
   // URLs de Desarrollo (Local)
   "http://localhost:5173",
   "http://127.0.0.1:5173",
@@ -32,13 +34,7 @@ const allowedOrigins = [
   "http://127.0.0.1:5500",
   "http://localhost:8080",
   "http://127.0.0.1:8080",
-  "http://localhost:3000",
-
-  //  URL DE PRODUCCIÓN DE TU FRONTEND (¡CLAVE!) 
-  "https://petrocontrol-frontend.vercel.app", 
-  
-  // Expresión regular para permitir URLs de preview de Vercel
-  /https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/, 
+  // ... otras URLs
 ];
 
 app.use(

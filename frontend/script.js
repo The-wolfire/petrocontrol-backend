@@ -1,10 +1,6 @@
 // =========================
 // Configuración Base
 // =========================
-
-// ❌ ELIMINADO: const API_BASE_URL = ...
-// ¡La variable API_BASE_URL ya viene de config.js!
-
 // Función central para llamadas API (redefinida para usar el token correcto)
 async function apiCall(endpoint, options = {}) {
   // index.html usa 'token', script.js usa 'authToken'. Unificamos.
