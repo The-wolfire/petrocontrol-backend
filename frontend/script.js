@@ -1,19 +1,17 @@
 // =========================
 // Configuración Base
 // =========================
-const API_BASE_URL = window.location.hostname === "localhost"
-  ? "http://localhost:3000/api"
-  : "https://tudominio.com/api";
 
 // Función central para llamadas API
 async function apiCall(endpoint, options = {}) {
-  const token = localStorage.getItem("authToken");
+  const token = localStorage.getItem("authToken"); // Tu script.js usa 'authToken'
   const headers = {
     "Content-Type": "application/json",
     ...(token ? { "Authorization": `Bearer ${token}` } : {})
   };
 
   try {
+    // ✅ USA LA VARIABLE GLOBAL CORRECTA DE config.js
     const res = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.message || "Error en la petición");
@@ -25,69 +23,35 @@ async function apiCall(endpoint, options = {}) {
 }
 
 // =========================
-// Login
+// Login (Referenciado desde index.html)
 // =========================
-async function handleLogin(e) {
-  e.preventDefault();
-  const username = document.getElementById('username')?.value.trim();
-  const password = document.getElementById('password')?.value;
-
-  if (!username || !password) {
-    showMessage('error', 'Complete los campos.');
-    return;
-  }
-
-  try {
-    const data = await apiCall("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ username, password })
-    });
-
-    localStorage.setItem("authToken", data.token);
-    localStorage.setItem("currentUser", data.user?.username || "");
-    localStorage.setItem("userRole", data.user?.role || "");
-
-    showMessage('success', 'Inicio de sesión exitoso');
-    window.location.href = "dashboard.html";
-  } catch (err) {
-    showMessage('error', err.message);
-  }
+// Estas funciones son necesarias para el script inline de index.html
+async function loginUser(username, password) {
+  return await apiCall("/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ username, password })
+  });
 }
 
 // =========================
-// Registro de usuario
+// Registro (Referenciado desde index.html)
 // =========================
-async function handleRegister(e) {
-  e.preventDefault();
-  const username = document.getElementById('reg-username')?.value.trim();
-  const password = document.getElementById('reg-password')?.value;
-
-  if (!username || !password) {
-    showMessage('error', 'Complete los campos.');
-    return;
-  }
-
-  try {
-    await apiCall("/auth/register", {
-      method: "POST",
-      body: JSON.stringify({ username, password })
-    });
-
-    showMessage('success', 'Usuario registrado con éxito.');
-    document.getElementById('register-form')?.reset();
-  } catch (err) {
-    showMessage('error', err.message);
-  }
+async function registerUser(userData) {
+  return await apiCall("/auth/register", {
+    method: "POST",
+    body: JSON.stringify(userData)
+  });
 }
 
 // =========================
 // Logout
 // =========================
 function handleLogout() {
-  localStorage.removeItem("authToken");
+  localStorage.removeItem("authToken"); //
   localStorage.removeItem("currentUser");
   localStorage.removeItem("userRole");
   localStorage.removeItem("userId");
+  localStorage.removeItem("token"); // (Limpiamos ambos por si acaso)
   window.location.href = "index.html";
 }
 
@@ -96,7 +60,7 @@ function handleLogout() {
 // =========================
 async function cargarRegistros() {
   try {
-    const registros = await apiCall("/registros");
+    const registros = await apiCall("/registros"); //
     const tbody = document.querySelector("#tabla-registros tbody");
     if (!tbody) return;
     tbody.innerHTML = "";
@@ -111,38 +75,39 @@ async function cargarRegistros() {
       tbody.appendChild(row);
     });
   } catch (err) {
-    showMessage('error', 'Error al cargar registros.');
+    // No usamos showMessage aquí porque el index.html no tiene el div 'message'
+    console.error('Error al cargar registros.');
   }
 }
 
 // =========================
 // Inicializar formularios de registro
 // =========================
-function inicializarFormulariosRegistro() {
-  document.getElementById("login-form")?.addEventListener("submit", handleLogin);
-  document.getElementById("register-form")?.addEventListener("submit", handleRegister);
-  document.getElementById("logout-btn")?.addEventListener("click", handleLogout);
-}
+// NO inicializar formularios aquí, index.html ya lo hace.
+// document.getElementById("login-form")?.addEventListener("submit", handleLogin);
+// document.getElementById("register-form")?.addEventListener("submit", handleRegister);
+// document.getElementById("logout-btn")?.addEventListener("click", handleLogout);
+
 
 // =========================
 // Mostrar mensajes
 // =========================
+// Esta función es llamada por el script inline de index.html
 function showMessage(type, text) {
-  const msgDiv = document.getElementById("message");
+  const msgDiv = document.getElementById("message-container"); //
   if (!msgDiv) {
     alert(text);
     return;
   }
-  msgDiv.textContent = text;
-  msgDiv.className = type === "error" ? "msg-error" : "msg-success";
-  setTimeout(() => msgDiv.textContent = "", 3000);
+  msgDiv.innerHTML = `<div class="message ${type}">${text}</div>`;
+  setTimeout(() => (msgDiv.innerHTML = ""), 5000); //
 }
 
 // =========================
 // Protección de rutas
 // =========================
 function checkAuth() {
-  const token = localStorage.getItem("authToken");
+  const token = localStorage.getItem("token") || localStorage.getItem("authToken"); // Revisamos ambos tokens
   if (!token && !window.location.pathname.endsWith("index.html")) {
     window.location.href = "index.html";
   }
@@ -153,5 +118,11 @@ function checkAuth() {
 // =========================
 document.addEventListener("DOMContentLoaded", () => {
   checkAuth();
-  inicializarFormulariosRegistro();
+  // Asignar Logout si el botón existe
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", handleLogout);
+  }
+  
+  // La lógica de login/register ya está en el script inline de index.html
 });
