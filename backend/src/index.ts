@@ -19,7 +19,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://127.0.0.1:5500";
+const FRONTEND_URL = process.env.FRONTEND_URL || "https://petrocontrol-frontend.vercel.app";
 
 // Lista de orígenes permitidos
 const allowedOrigins = [
@@ -58,13 +58,8 @@ app.use(helmet());
 // Configuración de CORS
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin) || (origin && origin.endsWith('.vercel.app'))) {
-        callback(null, true);
-      } else {
-        callback(new Error(`❌ No permitido por CORS: ${origin}`), false);
-      }
-    },
+    // ✅ CLAVE: Usar la variable de entorno, y si falla, usar la URL absoluta
+    origin: FRONTEND_URL, 
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], 
     credentials: true,
   })
