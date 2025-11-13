@@ -69,12 +69,12 @@ app.use(
 // ═══════════════════════════════════════════════════════════════════
 
 // Rutas principales
-app.use("/api/auth", authRoutes);
-app.use("/api/camiones", camionRoutes);
-app.use("/api/registros", registroRoutes);
-app.use("/api/camioneros", camioneroRoutes);
-app.use("/api/mantenimientos", mantenimientoRoutes);
-app.use("/api/inventario", inventarioRoutes);
+app.use("/routes", authRoutes);
+app.use("/routes", camionRoutes);
+app.use("/routes", registroRoutes);
+app.use("/rotres", camioneroRoutes);
+app.use("/routes", mantenimientoRoutes);
+app.use("/routes", inventarioRoutes);
 
 // Ruta base
 app.get("/", (_req: Request, res: Response) => {
