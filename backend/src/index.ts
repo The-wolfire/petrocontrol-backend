@@ -53,7 +53,8 @@ if (!isDbInitialized) {
 // ═══════════════════════════════════════════════════════════════════
 // CONFIGURACIÓN DE MIDDLEWARES BASE
 // ═══════════════════════════════════════════════════════════════════
-
+app.use(express.json());
+app.use(helmet());
 // Configuración de CORS
 app.use(
   cors({
@@ -73,9 +74,7 @@ app.use(
 // APLICACIÓN DE RUTAS (LIMPIA)
 // ═══════════════════════════════════════════════════════════════════
 
-// ❌ El código problemático ha sido eliminado.
-// El error TS2769 desaparece.
-
+// Rutas principales
 app.use("/api/auth", authRoutes);
 app.use("/api/camiones", camionRoutes);
 app.use("/api/registros", registroRoutes);
@@ -83,13 +82,9 @@ app.use("/api/camioneros", camioneroRoutes);
 app.use("/api/mantenimientos", mantenimientoRoutes);
 app.use("/api/inventario", inventarioRoutes);
 
-// Rutas base y de salud
-app.get("/api/health", (_req: Request, res: Response) => {
-    // Reportar el estado de la conexión en el health check.
-    if (!isDbInitialized) {
-        return res.status(503).json({ status: "error", message: "Database connection failed during initialization. (503 Service Unavailable)" });
-    }
-    res.status(200).json({ status: "ok", message: "Backend Health Check OK" });
+// Ruta base
+app.get("/", (_req: Request, res: Response) => {
+  res.send("Servidor PetroControl operativo.");
 });
 
 app.get("/", (_req: Request, res: Response) => {
