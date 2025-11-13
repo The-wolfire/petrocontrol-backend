@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import express, { type Request, type Response } from "express"; // Eliminamos NextFunction y RequestHandler que ya no son necesarios
+import express, { type Request, type Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
@@ -14,7 +14,6 @@ import camioneroRoutes from "./routes/camioneroRoutes";
 import mantenimientoRoutes from "./routes/mantenimientoRoutes";
 import inventarioRoutes from "./routes/inventarioRoutes";
 
-// ✅ Cargar variables de entorno
 dotenv.config();
 
 const app = express();
@@ -25,9 +24,18 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "https://petrocontrol-frontend.
 const allowedOrigins = [
   FRONTEND_URL,
   "https://petrocontrol-frontend.vercel.app",
-  // ...
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:3000",
 ];
 
+// ═══════════════════════════════════════════════════════════════════
+// CONFIGURACIÓN DE MIDDLEWARES BASE (SOLO UNA VEZ)
+// ═══════════════════════════════════════════════════════════════════
+app.use(express.json());
+app.use(helmet());
+
+// ✅ CONFIGURACIÓN CORS (SOLO UNA VEZ - eliminar el duplicado)
 app.use(
   cors({
     origin: allowedOrigins,
@@ -37,9 +45,8 @@ app.use(
 );
 
 // ═══════════════════════════════════════════════════════════════════
-// 🎯 PATRÓN SERVERLESS: INICIALIZACIÓN DE DB EN EL ALCANCE GLOBAL
+// 🎯 PATRÓN SERVERLESS: INICIALIZACIÓN DE DB
 // ═══════════════════════════════════════════════════════════════════
-// La conexión se intenta SOLO UNA VEZ cuando el contenedor Vercel arranca ("cold start").
 let isDbInitialized = AppDataSource.isInitialized;
 
 if (!isDbInitialized) {
@@ -49,46 +56,40 @@ if (!isDbInitialized) {
             console.log("✅ Base de datos conectada correctamente (Inicialización Serverless).");
         })
         .catch((error) => {
-            // Logeamos el error si falla la conexión en el arranque.
             console.error(`\n❌ [Database] Error al conectar en Serverless Init:`, error);
         });
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// CONFIGURACIÓN DE MIDDLEWARES BASE
+// APLICACIÓN DE RUTAS SIMPLIFICADAS
 // ═══════════════════════════════════════════════════════════════════
-app.use(express.json());
-app.use(helmet());
-// Configuración de CORS
-app.use(
-  cors({
-    origin: allowedOrigins, // Usa el array de orígenes
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Asegúrate de incluir OPTIONS
-    credentials: true,
-  })
-);
+app.use("/auth", authRoutes);
+app.use("/camiones", camionRoutes);
+app.use("/registros", registroRoutes);
+app.use("/camioneros", camioneroRoutes);
+app.use("/mantenimientos", mantenimientoRoutes);
+app.use("/inventario", inventarioRoutes);
 
-// ═══════════════════════════════════════════════════════════════════
-// APLICACIÓN DE RUTAS (LIMPIA)
-// ═══════════════════════════════════════════════════════════════════
+// Ruta de salud para testing
+app.get("/health", (_req: Request, res: Response) => {
+  res.json({ 
+    status: "healthy",
+    message: "Servidor PetroControl operativo",
+    timestamp: new Date().toISOString(),
+    routes: {
+      auth: "/auth",
+      camiones: "/camiones",
+      registros: "/registros", 
+      camioneros: "/camioneros",
+      mantenimientos: "/mantenimientos",
+      inventario: "/inventario"
+    }
+  });
+});
 
-// ✅ Rutas principales CORREGIDAS
-app.use("/auth", authRoutes); // Antes: /routes
-app.use("/camiones", camionRoutes); // Antes: /routes
-app.use("/registros", registroRoutes); // Antes: /routes
-app.use("/camioneros", camioneroRoutes); // Antes: /rotres
-app.use("/mantenimientos", mantenimientoRoutes); // Antes: /routes
-app.use("/inventario", inventarioRoutes); // Antes: /routes
-
-// Rutas base
+// Ruta base
 app.get("/", (_req: Request, res: Response) => {
   res.send("Servidor PetroControl operativo.");
 });
-
-// El segundo app.get("/") es redundante, puedes dejar solo uno.
-
-// ═══════════════════════════════════════════════════════════════════
-//  EXPORTAR EL OBJETO EXPRESS PARA VERCEL
-// ═══════════════════════════════════════════════════════════════════
 
 export default app;
