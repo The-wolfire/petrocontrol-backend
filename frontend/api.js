@@ -1,13 +1,10 @@
 // api.js
-
-// ¡NO DEFINIR BaseURL aquí!
-// Ya está definida en config.js, que se carga primero en index.html
-
 class ApiService {
-    // static baseURL = 'http://localhost:3000/api'; // <-- ELIMINADO
+    // Dejamos la clase sin definir baseURL. Asumiremos que usa la variable global.
+    // Usaremos la variable global API_BASE_URL (definida en config.js) directamente en el método request.
 
     static async request(endpoint, options = {}) {
-        const token = AuthManager.getToken(); // Asumimos que AuthManager está en script.js
+        const token = AuthManager.getToken();
         
         const config = {
             headers: {
@@ -19,9 +16,10 @@ class ApiService {
         };
 
         try {
-            // ✅ USA LA VARIABLE GLOBAL CORRECTA DE config.js
+            // ✅ USAR LA VARIABLE GLOBAL DE config.js (¡La clave!)
             const response = await fetch(`${API_BASE_URL}${endpoint}`, config); 
             
+            // ... (el resto del código sigue igual)
             if (response.status === 401) {
                 AuthManager.redirectToLogin(); // Asumimos que AuthManager existe
                 throw new Error('No autorizado');
