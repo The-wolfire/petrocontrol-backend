@@ -1,9 +1,13 @@
 import type { Request, Response, NextFunction } from "express"
 import jwt from "jsonwebtoken"
 
-const JWT_SECRET = process.env.JWT_SECRET || "tu_clave_secreta_muy_segura_aqui_123456"
+// ✅ IMPORTANTE: Verificar que JWT_SECRET esté configurado en Vercel
+const JWT_SECRET = process.env.JWT_SECRET
+if (!JWT_SECRET) {
+  console.error("❌ [CRITICAL] JWT_SECRET no está definido en las variables de entorno")
+  // En producción, esto debería fallar inmediatamente
+}
 
-// ✅ Interface para Request con usuario
 export interface AuthRequest extends Request {
   user?: {
     userId: number
@@ -15,12 +19,10 @@ export interface AuthRequest extends Request {
   }
 }
 
-// ✅ Middleware de autenticación
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers["authorization"]
     console.log(`🔐 [Auth] ${req.method} ${req.path}`)
-    console.log(`🔐 [Auth] Authorization header: ${authHeader ? "Presente" : "Ausente"}`)
 
     const token = authHeader && authHeader.split(" ")[1]
 
@@ -33,11 +35,19 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
       })
     }
 
-    // ✅ Verificar token
+    // ✅ Verificar que JWT_SECRET esté disponible
+    if (!JWT_SECRET) {
+      console.error("❌ [Auth] JWT_SECRET no configurado")
+      return res.status(500).json({
+        success: false,
+        message: "Error de configuración del servidor",
+        code: "SERVER_CONFIG_ERROR",
+      })
+    }
+
     const decoded = jwt.verify(token, JWT_SECRET) as any
     console.log(`✅ [Auth] Token válido para: ${decoded.username} (${decoded.role})`)
 
-    // ✅ Validar que tenga userId
     if (!decoded.userId) {
       console.log("❌ [Auth] Payload inválido: falta userId")
       return res.status(403).json({
@@ -76,7 +86,6 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
   }
 }
 
-// ✅ Middleware para verificar roles
 export const requireRole = (roles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
@@ -90,7 +99,6 @@ export const requireRole = (roles: string[]) => {
 
     const userRole = req.user.role
     console.log(`🔒 [Role] Usuario: ${req.user.username} (${userRole})`)
-    console.log(`🔒 [Role] Roles permitidos: ${roles.join(", ")}`)
 
     if (!roles.includes(userRole)) {
       console.log(`❌ [Role] Acceso denegado`)

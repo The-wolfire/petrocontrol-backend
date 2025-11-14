@@ -2,13 +2,13 @@
   "name": "petrocontrol-backend",
   "version": "2.0.0",
   "description": "Backend para sistema de gestión de flota de camiones petroleros",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "vercel-build": "npm run build"
-  }, 
+    "vercel-build": "npm run build && npm run typeorm -- migration:run"
+  },
   "engines": {
     "node": "20.x"
   },

@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "lib": ["ES2020"],
     "module": "CommonJS",
-    "moduleResolution": "node",
+    "lib": ["ES2020"],
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
@@ -15,8 +14,5 @@
     "resolveJsonModule": true
   },
   "include": ["src/**/*"],
-  "exclude": [
-    "node_modules",
-    "src/scripts" 
-  ]
+  "exclude": ["node_modules", "dist"]
 }
