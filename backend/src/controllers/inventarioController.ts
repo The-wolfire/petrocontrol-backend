@@ -92,7 +92,7 @@ export const getInventarioPorTipo = async (req: Request, res: Response) => {
     console.log(`📊 [Inventario] GET /api/inventario/tipo/${tipo}`)
 
     const registros = await registroRepository.find({
-      where: { tipoPetroleo: tipo },
+      where: { tipoPetroleo: String(tipo) },
       relations: ["camion"],
       order: { fechaCreacion: "DESC" },
     })

@@ -48,7 +48,7 @@ export const getRegistroById = async (req: Request, res: Response) => {
     console.log(`🔍 [Registros] GET /api/registros/${id}`)
 
     const registro = await registroRepository.findOne({
-      where: { id: Number.parseInt(id) },
+      where: { id: Number.parseInt(String(id)) },
       relations: ["camion"],
     })
 
@@ -152,7 +152,7 @@ export const updateRegistro = async (req: Request, res: Response) => {
     console.log(`📝 [Registros] PUT /api/registros/${id}`)
 
     const registro = await registroRepository.findOne({
-      where: { id: Number.parseInt(id) },
+      where: { id: Number.parseInt(String(id)) },
       relations: ["camion"],
     })
 
@@ -215,7 +215,7 @@ export const deleteRegistro = async (req: Request, res: Response) => {
     console.log(`🗑️ [Registros] DELETE /api/registros/${id}`)
 
     const registro = await registroRepository.findOne({
-      where: { id: Number.parseInt(id) },
+      where: { id: Number.parseInt(String(id)) },
     })
 
     if (!registro) {

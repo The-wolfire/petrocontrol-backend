@@ -53,7 +53,7 @@ export const getCamioneroById = async (req: Request, res: Response) => {
     console.log(`🔍 [Camioneros] GET /api/camioneros/${id}`)
 
     const camionero = await camioneroRepository.findOne({
-      where: { id: Number.parseInt(id) },
+      where: { id: Number.parseInt(String(id)) },
       relations: ["viajes"],
     })
 
@@ -154,7 +154,7 @@ export const updateCamionero = async (req: Request, res: Response) => {
     console.log(`📝 [Camioneros] PUT /api/camioneros/${id}`)
 
     const camionero = await camioneroRepository.findOne({
-      where: { id: Number.parseInt(id) },
+      where: { id: Number.parseInt(String(id)) },
     })
 
     if (!camionero) {
@@ -235,7 +235,7 @@ export const deleteCamionero = async (req: Request, res: Response) => {
     console.log(`🗑️ [Camioneros] DELETE /api/camioneros/${id}`)
 
     const camionero = await camioneroRepository.findOne({
-      where: { id: Number.parseInt(id) },
+      where: { id: Number.parseInt(String(id)) },
       relations: ["viajes"],
     })
 

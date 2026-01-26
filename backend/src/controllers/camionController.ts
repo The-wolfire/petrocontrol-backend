@@ -51,7 +51,7 @@ export const getCamionById = async (req: Request, res: Response) => {
     console.log(`🔍 [Camiones] GET /api/camiones/${id}`)
 
     const camion = await camionRepository.findOne({
-      where: { id: Number.parseInt(id) },
+      where: { id: Number.parseInt(String(id)) },
       relations: ["registros", "mantenimientos", "viajes", "camionero"],
     })
 
@@ -148,7 +148,7 @@ export const updateCamion = async (req: Request, res: Response) => {
     console.log(`📝 [Camiones] PUT /api/camiones/${id}`)
 
     const camion = await camionRepository.findOne({
-      where: { id: Number.parseInt(id) },
+      where: { id: Number.parseInt(String(id)) },
     })
 
     if (!camion) {
@@ -214,7 +214,7 @@ export const deleteCamion = async (req: Request, res: Response) => {
     console.log(`🗑️ [Camiones] DELETE /api/camiones/${id}`)
 
     const camion = await camionRepository.findOne({
-      where: { id: Number.parseInt(id) },
+      where: { id: Number.parseInt(String(id)) },
       relations: ["registros", "mantenimientos", "viajes"],
     })
 

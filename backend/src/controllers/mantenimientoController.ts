@@ -58,7 +58,7 @@ export const getMantenimientoById = async (req: Request, res: Response) => {
     console.log(`🔍 [Mantenimientos] GET /api/mantenimientos/${id}`)
 
     const mantenimiento = await mantenimientoRepository.findOne({
-      where: { id: Number.parseInt(id) },
+      where: { id: Number.parseInt(String(id)) },
       relations: ["camion"],
     })
 
@@ -168,7 +168,7 @@ export const updateMantenimiento = async (req: Request, res: Response) => {
     console.log(`📝 [Mantenimientos] PUT /api/mantenimientos/${id}`)
 
     const mantenimiento = await mantenimientoRepository.findOne({
-      where: { id: Number.parseInt(id) },
+      where: { id: Number.parseInt(String(id)) },
     })
 
     if (!mantenimiento) {
@@ -227,7 +227,7 @@ export const completarMantenimiento = async (req: Request, res: Response) => {
     console.log(`✅ [Mantenimientos] PUT /api/mantenimientos/${id}/completar`)
 
     const mantenimiento = await mantenimientoRepository.findOne({
-      where: { id: Number.parseInt(id) },
+      where: { id: Number.parseInt(String(id)) },
     })
 
     if (!mantenimiento) {
@@ -273,7 +273,7 @@ export const deleteMantenimiento = async (req: Request, res: Response) => {
     console.log(`🗑️ [Mantenimientos] DELETE /api/mantenimientos/${id}`)
 
     const mantenimiento = await mantenimientoRepository.findOne({
-      where: { id: Number.parseInt(id) },
+      where: { id: Number.parseInt(String(id)) },
     })
 
     if (!mantenimiento) {
