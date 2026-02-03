@@ -28,7 +28,7 @@ export const AppDataSource = new DataSource({
   database: !isProduction ? process.env.DB_NAME : undefined,
 
   // ←←← TEMPORAL: Creamos las tablas automáticamente
-  synchronize: true,
+  synchronize: !isProduction,
 
   // Desactivamos logging en producción para no llenar logs
   logging: !isProduction,
