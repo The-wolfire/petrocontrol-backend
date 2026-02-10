@@ -777,39 +777,45 @@
     }
 }
     </style>
-    <script>
+<script>
     document.addEventListener("DOMContentLoaded", async () => {
-        // 1. Chequeo inicial de autenticación (evita cargar si token malo/expirado)
+        console.log("🔍 Iniciando carga de página...");
+
+        // Chequeo de token
+        const token = AuthManager.getToken();
+        console.log("Token encontrado:", token ? "Sí (longitud: " + token.length + ")" : "No");
+
+        if (token) {
+            const user = AuthManager.getCurrentUser();
+            console.log("Usuario decodificado:", user);
+        }
+
         if (!AuthManager.isAuthenticated()) {
+            console.warn("No autenticado → redirigiendo");
             AuthManager.redirectToLogin();
             return;
         }
 
-        // 2. Mostrar nombre del usuario en el header
-        const user = AuthManager.getCurrentUser();
-        const userNameElement = document.getElementById("user-name"); // Asegúrate de que el ID exista en tu HTML
-        if (userNameElement && user) {
-            userNameElement.textContent = user.username || "Usuario";
+        // Mostrar nombre
+        const userNameElement = document.getElementById("user-name");
+        if (userNameElement) {
+            userNameElement.textContent = AuthManager.getCurrentUser()?.username || "Usuario";
         }
 
-        // 3. Cargar los datos específicos de la página
         try {
-            // Para camioneros.html → carga lista de camioneros
-            if (typeof cargarCamioneros === "function") {
-                await cargarCamioneros();
-            }
-
-            // Para mantenimiento.html → carga lista de mantenimientos
             if (typeof cargarMantenimientos === "function") {
+                console.log("Cargando mantenimientos...");
                 await cargarMantenimientos();
             }
-
-            console.log("✅ Página cargada correctamente");
+            if (typeof cargarCamioneros === "function") {
+                console.log("Cargando camioneros...");
+                await cargarCamioneros();
+            }
+            console.log("✅ Datos cargados correctamente");
         } catch (error) {
-            console.error("Error cargando datos:", error);
-            // Opcional: mostrar mensaje amigable en la página
-            alert("Error al cargar datos. Puede que tu sesión haya expirado.");
-            AuthManager.redirectToLogin();
+            console.error("❌ Error al cargar datos:", error);
+            console.error("Mensaje del servidor:", error.message);
+            // NO redirigimos aquí → así vemos el error real
         }
     });
 </script>
