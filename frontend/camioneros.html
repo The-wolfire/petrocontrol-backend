@@ -601,5 +601,41 @@
             }
         }
 </style>
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        // 1. Chequeo inicial de autenticación (evita cargar si token malo/expirado)
+        if (!AuthManager.isAuthenticated()) {
+            AuthManager.redirectToLogin();
+            return;
+        }
+
+        // 2. Mostrar nombre del usuario en el header
+        const user = AuthManager.getCurrentUser();
+        const userNameElement = document.getElementById("user-name"); // Asegúrate de que el ID exista en tu HTML
+        if (userNameElement && user) {
+            userNameElement.textContent = user.username || "Usuario";
+        }
+
+        // 3. Cargar los datos específicos de la página
+        try {
+            // Para camioneros.html → carga lista de camioneros
+            if (typeof cargarCamioneros === "function") {
+                await cargarCamioneros();
+            }
+
+            // Para mantenimiento.html → carga lista de mantenimientos
+            if (typeof cargarMantenimientos === "function") {
+                await cargarMantenimientos();
+            }
+
+            console.log("✅ Página cargada correctamente");
+        } catch (error) {
+            console.error("Error cargando datos:", error);
+            // Opcional: mostrar mensaje amigable en la página
+            alert("Error al cargar datos. Puede que tu sesión haya expirado.");
+            AuthManager.redirectToLogin();
+        }
+    });
+</script>
 </body>
 </html>
