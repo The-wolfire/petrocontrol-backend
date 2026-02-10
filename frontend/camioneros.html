@@ -603,16 +603,7 @@
 </style>
 <script>
     document.addEventListener("DOMContentLoaded", async () => {
-        console.log("🔍 Iniciando carga de página...");
-
-        // Chequeo de token
-        const token = AuthManager.getToken();
-        console.log("Token encontrado:", token ? "Sí (longitud: " + token.length + ")" : "No");
-
-        if (token) {
-            const user = AuthManager.getCurrentUser();
-            console.log("Usuario decodificado:", user);
-        }
+        console.log("Iniciando carga de página...");
 
         if (!AuthManager.isAuthenticated()) {
             console.warn("No autenticado → redirigiendo");
@@ -620,26 +611,29 @@
             return;
         }
 
-        // Mostrar nombre
+        const user = AuthManager.getCurrentUser();
+        console.log("Usuario actual (admin):", user);
+
         const userNameElement = document.getElementById("user-name");
         if (userNameElement) {
-            userNameElement.textContent = AuthManager.getCurrentUser()?.username || "Usuario";
+            userNameElement.textContent = user?.username || "Admin";
         }
 
         try {
             if (typeof cargarMantenimientos === "function") {
                 console.log("Cargando mantenimientos...");
                 await cargarMantenimientos();
+                console.log("Mantenimientos cargados OK");
             }
             if (typeof cargarCamioneros === "function") {
                 console.log("Cargando camioneros...");
                 await cargarCamioneros();
+                console.log("Camioneros cargados OK");
             }
-            console.log("✅ Datos cargados correctamente");
         } catch (error) {
-            console.error("❌ Error al cargar datos:", error);
-            console.error("Mensaje del servidor:", error.message);
-            // NO redirigimos aquí → así vemos el error real
+            console.error("Error cargando datos:", error.message || error);
+            alert("Error al cargar datos: " + (error.message || "Intenta recargar la página"));
+            // NO redirigimos aquí → vemos el error real
         }
     });
 </script>

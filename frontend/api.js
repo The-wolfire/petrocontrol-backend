@@ -1,8 +1,12 @@
-// api.js - Solo llamadas API (usa AuthManager de auth.js)
+// api.js - Llamadas API con fallback para URL (evita errores si config falla)
+
+const API_BASE_URL = window.API_BASE_URL || "https://petrocontrol-backend.vercel.app/api";
+
+console.log("API_BASE_URL en api.js:", API_BASE_URL); // Para depurar en consola
 
 class ApiService {
     static async request(endpoint, options = {}) {
-        const token = AuthManager.getToken(); // Usa el de auth.js
+        const token = AuthManager.getToken();
         
         const config = {
             headers: {
@@ -17,6 +21,7 @@ class ApiService {
             const response = await fetch(`${API_BASE_URL}${endpoint}`, config); 
             
             if (response.status === 401) {
+                console.warn("401 detectado → sesión expirada");
                 AuthManager.redirectToLogin();
                 throw new Error('Sesión expirada');
             }
@@ -30,12 +35,12 @@ class ApiService {
 
             return await response.json();
         } catch (error) {
-            console.error(`Error en API ${endpoint}:`, error);
+            console.error(`Error en API ${endpoint}:`, error.message || error);
             throw error;
         }
     }
 
-    // Tus métodos específicos
+    // Tus métodos
     static async getRegistros() { return this.request('/registros'); }
     static async createRegistro(data) { return this.request('/registros', { method: 'POST', body: JSON.stringify(data) }); }
     static async getCamiones() { return this.request('/camiones'); }
@@ -44,5 +49,5 @@ class ApiService {
     static async createCamionero(data) { return this.request('/camioneros', { method: 'POST', body: JSON.stringify(data) }); }
     static async getMantenimientos() { return this.request('/mantenimientos'); }
     static async createMantenimiento(data) { return this.request('/mantenimientos', { method: 'POST', body: JSON.stringify(data) }); }
-    // Agrega los demás si tienes más
+    // Agrega los demás si tienes
 }
