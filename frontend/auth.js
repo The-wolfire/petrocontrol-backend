@@ -1,4 +1,4 @@
-// auth.js - Manejo de autenticación robusto y seguro
+// auth.js - Autenticación completa y única (sin duplicados)
 
 class AuthManager {
     static getToken() {
@@ -7,7 +7,7 @@ class AuthManager {
 
     static setToken(token) {
         localStorage.setItem("token", token);
-        localStorage.setItem("authToken", token); // Compatibilidad vieja
+        localStorage.setItem("authToken", token); // Compatibilidad
     }
 
     static removeTokens() {
@@ -15,14 +15,12 @@ class AuthManager {
         localStorage.removeItem("authToken");
     }
 
-    // Chequea si hay token y si no está expirado
     static isAuthenticated() {
         const token = this.getToken();
         if (!token) return false;
 
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
-            // Si el token tiene expiración y ya expiró
             if (payload.exp && Date.now() >= payload.exp * 1000) {
                 console.warn("Token expirado");
                 this.removeTokens();
@@ -36,7 +34,6 @@ class AuthManager {
         }
     }
 
-    // Obtiene datos del usuario del token (username, role, etc.)
     static getCurrentUser() {
         const token = this.getToken();
         if (!token) return null;
@@ -47,13 +44,11 @@ class AuthManager {
         }
     }
 
-    // Redirige al login limpiando tokens
     static redirectToLogin() {
         this.removeTokens();
         window.location.href = "index.html";
     }
 
-    // Logout manual
     static logout() {
         if (confirm("¿Seguro que quieres cerrar sesión?")) {
             this.redirectToLogin();
@@ -61,5 +56,5 @@ class AuthManager {
     }
 }
 
-// Hacer funciones globales para usar en onclick
+// Funciones globales para botones
 window.logout = () => AuthManager.logout();
