@@ -1,4 +1,4 @@
-// api.js - Versión segura con objeto literal (sin class ni let/const duplicados)
+// api.js - Sin redirect automático en 401 (para ver el error real del backend)
 
 console.log("API_BASE_URL en api.js:", window.API_BASE_URL || "ERROR: no definida");
 
@@ -17,32 +17,28 @@ const ApiService = {
 
         try {
             if (!window.API_BASE_URL) {
-                throw new Error("API_BASE_URL no está definida - revisa config.js");
+                throw new Error("API_BASE_URL no definida");
             }
             
             const response = await fetch(`${window.API_BASE_URL}${endpoint}`, config); 
             
-            if (response.status === 401) {
-                console.warn("401 - Sesión expirada o acceso denegado");
-                AuthManager.redirectToLogin();
-                throw new Error('Sesión expirada');
-            }
-
+            // QUITAMOS EL REDIRECT AUTOMÁTICO PARA VER EL ERROR REAL
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || `Error ${response.status}`);
+                const message = errorData.message || `Error ${response.status} ${response.statusText}`;
+                throw new Error(message);
             }
             
             if (response.status === 204) return null;
 
             return await response.json();
         } catch (error) {
-            console.error(`Error en llamada API a ${endpoint}:`, error.message || error);
-            throw error;
+            console.error(`Error en API ${endpoint}:`, error.message || error);
+            throw error; // Lanzamos el error para que la página lo maneje
         }
     },
 
-    // Tus métodos específicos
+    // Tus métodos (no cambian)
     getRegistros: async function() { return this.request('/registros'); },
     createRegistro: async function(data) { return this.request('/registros', { method: 'POST', body: JSON.stringify(data) }); },
     getCamiones: async function() { return this.request('/camiones'); },
@@ -51,5 +47,4 @@ const ApiService = {
     createCamionero: async function(data) { return this.request('/camioneros', { method: 'POST', body: JSON.stringify(data) }); },
     getMantenimientos: async function() { return this.request('/mantenimientos'); },
     createMantenimiento: async function(data) { return this.request('/mantenimientos', { method: 'POST', body: JSON.stringify(data) }); },
-    // Agrega aquí los demás métodos que tengas (getInventario, etc.)
 };

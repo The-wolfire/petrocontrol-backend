@@ -612,28 +612,29 @@
         }
 
         const user = AuthManager.getCurrentUser();
-        console.log("Usuario actual (admin):", user);
+        console.log("Usuario actual:", user); // ← Verás el role aquí
 
         const userNameElement = document.getElementById("user-name");
         if (userNameElement) {
-            userNameElement.textContent = user?.username || "Admin";
+            userNameElement.textContent = user?.username || "Usuario";
         }
 
         try {
-            if (typeof cargarMantenimientos === "function") {
-                console.log("Cargando mantenimientos...");
-                await cargarMantenimientos();
-                console.log("Mantenimientos cargados OK");
-            }
-            if (typeof cargarCamioneros === "function") {
-                console.log("Cargando camioneros...");
-                await cargarCamioneros();
-                console.log("Camioneros cargados OK");
-            }
+            // Carga específica
+            if (typeof cargarMantenimientos === "function") await cargarMantenimientos();
+            if (typeof cargarCamioneros === "function") await cargarCamioneros();
+
+            console.log("Datos cargados correctamente");
         } catch (error) {
-            console.error("Error cargando datos:", error.message || error);
-            alert("Error al cargar datos: " + (error.message || "Intenta recargar la página"));
-            // NO redirigimos aquí → vemos el error real
+            console.error("Error detallado del backend:", error.message);
+
+            // Muestra el error real del backend
+            alert("Error del servidor: " + error.message);
+
+            // Solo redirige si es sesión expirada o token inválido
+            if (error.message.includes("401") || error.message.includes("autorizado") || error.message.includes("expirada")) {
+                AuthManager.redirectToLogin();
+            }
         }
     });
 </script>
