@@ -1,9 +1,9 @@
-// api.js - Usa SOLO la variable global de config.js (sin redeclarar nada)
+// api.js - Versión segura con objeto literal (sin class ni let/const duplicados)
 
-console.log("API_BASE_URL usada en api.js:", window.API_BASE_URL || "NO DEFINIDA - ERROR");
+console.log("API_BASE_URL en api.js:", window.API_BASE_URL || "ERROR: no definida");
 
-class ApiService {
-    static async request(endpoint, options = {}) {
+const ApiService = {
+    async request(endpoint, options = {}) {
         const token = AuthManager.getToken();
         
         const config = {
@@ -16,15 +16,14 @@ class ApiService {
         };
 
         try {
-            // Usa la global directamente
             if (!window.API_BASE_URL) {
-                throw new Error("API_BASE_URL no definida - revisa config.js");
+                throw new Error("API_BASE_URL no está definida - revisa config.js");
             }
             
             const response = await fetch(`${window.API_BASE_URL}${endpoint}`, config); 
             
             if (response.status === 401) {
-                console.warn("401 - Sesión expirada");
+                console.warn("401 - Sesión expirada o acceso denegado");
                 AuthManager.redirectToLogin();
                 throw new Error('Sesión expirada');
             }
@@ -38,18 +37,19 @@ class ApiService {
 
             return await response.json();
         } catch (error) {
-            console.error(`Error en API ${endpoint}:`, error.message || error);
+            console.error(`Error en llamada API a ${endpoint}:`, error.message || error);
             throw error;
         }
-    }
+    },
 
-    // Tus métodos específicos (agrega los que tengas)
-    static async getRegistros() { return this.request('/registros'); }
-    static async createRegistro(data) { return this.request('/registros', { method: 'POST', body: JSON.stringify(data) }); }
-    static async getCamiones() { return this.request('/camiones'); }
-    static async createCamion(data) { return this.request('/camiones', { method: 'POST', body: JSON.stringify(data) }); }
-    static async getCamioneros() { return this.request('/camioneros'); }
-    static async createCamionero(data) { return this.request('/camioneros', { method: 'POST', body: JSON.stringify(data) }); }
-    static async getMantenimientos() { return this.request('/mantenimientos'); }
-    static async createMantenimiento(data) { return this.request('/mantenimientos', { method: 'POST', body: JSON.stringify(data) }); }
-}
+    // Tus métodos específicos
+    getRegistros: async function() { return this.request('/registros'); },
+    createRegistro: async function(data) { return this.request('/registros', { method: 'POST', body: JSON.stringify(data) }); },
+    getCamiones: async function() { return this.request('/camiones'); },
+    createCamion: async function(data) { return this.request('/camiones', { method: 'POST', body: JSON.stringify(data) }); },
+    getCamioneros: async function() { return this.request('/camioneros'); },
+    createCamionero: async function(data) { return this.request('/camioneros', { method: 'POST', body: JSON.stringify(data) }); },
+    getMantenimientos: async function() { return this.request('/mantenimientos'); },
+    createMantenimiento: async function(data) { return this.request('/mantenimientos', { method: 'POST', body: JSON.stringify(data) }); },
+    // Agrega aquí los demás métodos que tengas (getInventario, etc.)
+};
