@@ -1,8 +1,6 @@
-// api.js - Llamadas API con fallback para URL (evita errores si config falla)
+// api.js - Usa SOLO la variable global de config.js (sin redeclarar nada)
 
-const API_BASE_URL = window.API_BASE_URL || "https://petrocontrol-backend.vercel.app/api";
-
-console.log("API_BASE_URL en api.js:", API_BASE_URL); // Para depurar en consola
+console.log("API_BASE_URL usada en api.js:", window.API_BASE_URL || "NO DEFINIDA - ERROR");
 
 class ApiService {
     static async request(endpoint, options = {}) {
@@ -18,10 +16,15 @@ class ApiService {
         };
 
         try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, config); 
+            // Usa la global directamente
+            if (!window.API_BASE_URL) {
+                throw new Error("API_BASE_URL no definida - revisa config.js");
+            }
+            
+            const response = await fetch(`${window.API_BASE_URL}${endpoint}`, config); 
             
             if (response.status === 401) {
-                console.warn("401 detectado → sesión expirada");
+                console.warn("401 - Sesión expirada");
                 AuthManager.redirectToLogin();
                 throw new Error('Sesión expirada');
             }
@@ -40,7 +43,7 @@ class ApiService {
         }
     }
 
-    // Tus métodos
+    // Tus métodos específicos (agrega los que tengas)
     static async getRegistros() { return this.request('/registros'); }
     static async createRegistro(data) { return this.request('/registros', { method: 'POST', body: JSON.stringify(data) }); }
     static async getCamiones() { return this.request('/camiones'); }
@@ -49,5 +52,4 @@ class ApiService {
     static async createCamionero(data) { return this.request('/camioneros', { method: 'POST', body: JSON.stringify(data) }); }
     static async getMantenimientos() { return this.request('/mantenimientos'); }
     static async createMantenimiento(data) { return this.request('/mantenimientos', { method: 'POST', body: JSON.stringify(data) }); }
-    // Agrega los demás si tienes
 }
