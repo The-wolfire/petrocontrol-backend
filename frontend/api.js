@@ -1,4 +1,4 @@
-// api.js - Sin redirect en 401 (muestra error real)
+// api.js - SIN redirección automática (muestra error real)
 
 console.log("API_BASE_URL en api.js:", window.API_BASE_URL || "ERROR: no definida");
 
@@ -21,18 +21,18 @@ const ApiService = {
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 const message = errorData.message || `Error ${response.status}`;
-                throw new Error(message); // Lanzamos error para mostrar en el script
+                throw new Error(message);
             }
 
             if (response.status === 204) return null;
             return await response.json();
         } catch (error) {
             console.error(`Error en API ${endpoint}:`, error.message);
-            throw error; // No redirigimos aquí
+            throw error; // Solo lanzamos error – NO redirigimos
         }
     },
 
     getMantenimientos: async () => ApiService.request('/mantenimientos'),
     getCamioneros: async () => ApiService.request('/camioneros'),
-    // Otros métodos
+    // Tus otros métodos
 };
