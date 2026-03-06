@@ -1,4 +1,3 @@
-// Obtener la URL base desde config.js (definida globalmente)
 const API_BASE_URL = window.API_BASE_URL || "https://petrocontrol-backend.vercel.app/api";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -382,4 +381,4 @@ function showMessage(message, type = "info") {
       }, 300)
     }
   }, 5000)
-}
+} 

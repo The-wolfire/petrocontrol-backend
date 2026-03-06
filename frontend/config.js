@@ -11,8 +11,7 @@ const API_CONFIG = {
   }
 };
 
-const API_BASE_URL = API_CONFIG.getBaseURL();
+// Asignar directamente a window, sin crear una variable global adicional
+window.API_BASE_URL = API_CONFIG.getBaseURL();
 
-console.log("🌐 API Base URL configurada en config.js:", API_BASE_URL);
-
-window.API_BASE_URL = "https://petrocontrol-backend.vercel.app/api";
+console.log(" API Base URL configurada en config.js:", window.API_BASE_URL);
