@@ -27,9 +27,7 @@ export const AppDataSource = new DataSource({
   password: !isProduction ? process.env.DB_PASSWORD : undefined,
   database: !isProduction ? process.env.DB_NAME : undefined,
 
-  // ⚠️ TEMPORAL: Forzar sincronización para crear tablas en producción
-  // Después del primer despliegue, cambiar a: synchronize: !isProduction
-  synchronize: true, // Ahora se crean las tablas en producción
+synchronize: !isProduction,  // ← vuelve a la condición original
 
   // Desactivamos logging en producción para no llenar logs
   logging: !isProduction,
