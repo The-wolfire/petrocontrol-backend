@@ -281,26 +281,30 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Página de mantenimiento cargada');
             
+            // Intentar obtener el token para mostrar el nombre de usuario, pero sin redirigir
             const token = localStorage.getItem("token");
-            if (!token) {
-                alert("No estás autenticado. Redirigiendo al login...");
-                window.location.href = "index.html";
-                return;
-            }
+            const userNameElement = document.getElementById('user-name');
             
-            try {
-                const decoded = JSON.parse(atob(token));
-                const userNameElement = document.getElementById('user-name');
-                if (userNameElement) {
-                    userNameElement.textContent = decoded.username || 'Usuario';
+            if (token) {
+                try {
+                    // Intento decodificar como JWT (formato header.payload.signature)
+                    const parts = token.split('.');
+                    if (parts.length === 3) {
+                        const payload = JSON.parse(atob(parts[1]));
+                        userNameElement.textContent = payload.username || 'Usuario';
+                    } else {
+                        // Si no es JWT, mostramos un nombre genérico
+                        userNameElement.textContent = 'Usuario';
+                    }
+                } catch (error) {
+                    console.warn('No se pudo decodificar el token, mostrando "Invitado"');
+                    userNameElement.textContent = 'Invitado';
                 }
-            } catch (error) {
-                console.error('❌ Error decodificando token:', error);
-                localStorage.removeItem('token');
-                window.location.href = 'index.html';
-                return;
+            } else {
+                userNameElement.textContent = 'Invitado';
             }
 
+            // Inicializar la página siempre (cargar datos, configurar eventos)
             inicializarPagina();
         });
 
@@ -326,9 +330,11 @@
         async function cargarMantenimientos() {
             try {
                 const token = localStorage.getItem("token");
-                const response = await fetch('http://localhost:3000/api/mantenimientos', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const headers = {};
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                const response = await fetch('http://localhost:3000/api/mantenimientos', { headers });
 
                 if (!response.ok) throw new Error(`Error ${response.status}`);
 
@@ -347,9 +353,11 @@
         async function cargarCamionesParaSelect() {
             try {
                 const token = localStorage.getItem("token");
-                const response = await fetch('http://localhost:3000/api/camiones', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+                const headers = {};
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                const response = await fetch('http://localhost:3000/api/camiones', { headers });
 
                 if (!response.ok) throw new Error(`Error ${response.status}`);
 
@@ -490,7 +498,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`
+                        ...(token && { Authorization: `Bearer ${token}` })
                     },
                     body: JSON.stringify(data)
                 });
@@ -536,7 +544,7 @@
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`
+                        ...(token && { Authorization: `Bearer ${token}` })
                     },
                     body: JSON.stringify(data)
                 });
