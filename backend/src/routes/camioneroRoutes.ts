@@ -1,31 +1,30 @@
 import { Router } from "express"
-import { authenticateToken } from "../middleware/auth" // ✅ Importa el middleware correcto
+import { authenticateToken, requireRole } from "../middleware/auth"
+
+// Importa tus controladores reales (ajusta nombres si son diferentes)
+import {
+  getCamioneros,
+  getCamioneroById,
+  createCamionero,
+  updateCamionero,
+  deleteCamionero,
+} from "../controllers/camioneroController" // ajusta el path si es necesario
 
 const router = Router()
 
-// Logging middleware para debugging
+// Logging
 router.use((req, res, next) => {
-  console.log(`👤 Camioneros Route: ${req.method} ${req.path}`)
+  console.log(`👤 Camioneros: ${req.method} ${req.path}`)
   next()
 })
 
-// ✅ USA EL MIDDLEWARE CORRECTO DE AUTENTICACIÓN JWT
-router.use(authenticateToken)
+// Rutas públicas (sin autenticación) - GET para ver datos
+router.get("/", getCamioneros)
+router.get("/:id", getCamioneroById)
 
-// Rutas de camioneros (TEMPORAL - hasta que tengas el controlador)
-router.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "Ruta de camioneros funcionando - Controlador pendiente",
-    camioneros: []
-  })
-})
-
-router.post("/", (req, res) => {
-  res.status(201).json({
-    success: true,
-    message: "Camionero creado exitosamente - Controlador pendiente"
-  })
-})
+// Rutas protegidas (con autenticación y rol)
+router.post("/", authenticateToken, requireRole(["admin", "operador"]), createCamionero)
+router.put("/:id", authenticateToken, requireRole(["admin", "operador"]), updateCamionero)
+router.delete("/:id", authenticateToken, requireRole(["admin"]), deleteCamionero)
 
 export default router

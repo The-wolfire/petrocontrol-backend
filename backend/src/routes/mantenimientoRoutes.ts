@@ -11,23 +11,20 @@ import { authenticateToken, requireRole } from "../middleware/auth"
 
 const router = Router()
 
-// Logging middleware
+// Logging para depurar
 router.use((req, res, next) => {
-  console.log(`🔧 [Mantenimientos Route] ${req.method} ${req.path}`)
+  console.log(`🔧 Mantenimientos: ${req.method} ${req.path}`)
   next()
 })
 
-// ✅ Aplicar autenticación a todas las rutas
-router.use(authenticateToken)
-
-// Rutas públicas (con autenticación)
+// Rutas públicas (sin autenticación) - GET para ver datos
 router.get("/", getMantenimientos)
 router.get("/:id", getMantenimientoById)
 
-// Rutas que requieren permisos específicos
-router.post("/", requireRole(["admin", "operador"]), createMantenimiento)
-router.put("/:id", requireRole(["admin", "operador"]), updateMantenimiento)
-router.put("/:id/completar", requireRole(["admin", "operador"]), completarMantenimiento)
-router.delete("/:id", requireRole(["admin"]), deleteMantenimiento)
+// Rutas protegidas (con autenticación y rol)
+router.post("/", authenticateToken, requireRole(["admin", "operador"]), createMantenimiento)
+router.put("/:id", authenticateToken, requireRole(["admin", "operador"]), updateMantenimiento)
+router.put("/:id/completar", authenticateToken, requireRole(["admin", "operador"]), completarMantenimiento)
+router.delete("/:id", authenticateToken, requireRole(["admin"]), deleteMantenimiento)
 
 export default router
