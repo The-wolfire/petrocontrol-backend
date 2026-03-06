@@ -11,16 +11,17 @@ import { authenticateToken, requireRole } from "../middleware/auth"
 
 const router = Router()
 
+// Logging
 router.use((req, res, next) => {
   console.log(`🔧 Mantenimientos: ${req.method} ${req.path}`)
   next()
 })
 
-// Rutas SIN autenticación (públicas para ver datos)
+// Rutas SIN autenticación (GET para ver datos)
 router.get("/", getMantenimientos)
 router.get("/:id", getMantenimientoById)
 
-// Rutas CON autenticación (solo para modificar)
+// Rutas CON autenticación (POST/PUT/DELETE)
 router.post("/", authenticateToken, requireRole(["admin", "operador"]), createMantenimiento)
 router.put("/:id", authenticateToken, requireRole(["admin", "operador"]), updateMantenimiento)
 router.put("/:id/completar", authenticateToken, requireRole(["admin", "operador"]), completarMantenimiento)
