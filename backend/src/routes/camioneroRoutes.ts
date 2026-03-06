@@ -6,17 +6,11 @@ import {
   createCamionero,
   updateCamionero,
   deleteCamionero,
-} from "../controllers/camioneroController" // ajusta el path
+} from "../controllers/camioneroController" // ajusta el import si el nombre es diferente
 
 const router = Router()
 
-// Logging
-router.use((req, res, next) => {
-  console.log(`👤 Camioneros: ${req.method} ${req.path}`)
-  next()
-})
-
-// Rutas SIN autenticación (GET para ver datos)
+// Rutas SIN autenticación (públicas para ver datos – ya no redirige)
 router.get("/", getCamioneros)
 router.get("/:id", getCamioneroById)
 
