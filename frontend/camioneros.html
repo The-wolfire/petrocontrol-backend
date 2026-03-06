@@ -601,34 +601,5 @@
             }
         }
 </style>
-<script>
-    document.addEventListener("DOMContentLoaded", async () => {
-        console.log("Iniciando carga de página...");
-
-        if (!AuthManager.isAuthenticated()) {
-            console.warn("No autenticado → redirigiendo");
-            AuthManager.redirectToLogin();
-            return;
-        }
-
-        const user = AuthManager.getCurrentUser();
-        console.log("Usuario actual:", user);
-
-        const userNameElement = document.getElementById("user-name");
-        if (userNameElement) {
-            userNameElement.textContent = user?.username || "Usuario";
-        }
-
-        try {
-            if (typeof cargarMantenimientos === "function") await cargarMantenimientos();
-            if (typeof cargarCamioneros === "function") await cargarCamioneros();
-            console.log("Datos cargados correctamente");
-        } catch (error) {
-            console.error("Error detallado del backend:", error.message);
-            alert("Error del servidor: " + error.message); // Muestra error real
-            // QUITAMOS redirect – no vuelve a pasar
-        }
-    });
-</script>
 </body>
 </html>
