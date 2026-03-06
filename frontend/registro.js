@@ -346,31 +346,21 @@ async function eliminarRegistro(id) {
   const token = localStorage.getItem("token");
   const API_BASE_URL = "http://localhost:3000/api";
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/registros/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
-    }
-
-    const result = await response.json();
-    console.log("Registro eliminado:", result);
-    showMessage("Registro eliminado exitosamente", "success");
-
-    // Recargar los registros para actualizar las tablas
-    await cargarRegistros();
-  } catch (error) {
-    console.error("Error al eliminar registro:", error);
-    showMessage("Error al eliminar el registro: " + error.message, "error");
+ try {
+  const response = await fetch(`${API_BASE_URL}/registros`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  // ...
+} catch (error) {
+  if (error.message.includes('Failed to fetch')) {
+    console.error('❌ No se pudo conectar al servidor. Verifica que el backend esté corriendo y que no haya bloqueos.');
+    showMessage('No se pudo conectar al servidor. Revisa tu conexión o extensiones.', 'error');
+  } else {
+    console.error('Error:', error);
+    showMessage('Error al cargar registros: ' + error.message, 'error');
   }
 }
-
+}
 // Función para mostrar mensajes
 function showMessage(message, type = "info") {
   // Remover mensajes anteriores
