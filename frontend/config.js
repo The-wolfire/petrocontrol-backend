@@ -15,4 +15,4 @@ const API_BASE_URL = API_CONFIG.getBaseURL();
 
 console.log("🌐 API Base URL configurada en config.js:", API_BASE_URL);
 
-window.API_BASE_URL = API_BASE_URL;
+window.API_BASE_URL = "https://petrocontrol-backend.vercel.app/api";

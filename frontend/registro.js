@@ -1,6 +1,8 @@
+// Obtener la URL base desde config.js (definida globalmente)
+const API_BASE_URL = window.API_BASE_URL || "https://petrocontrol-backend.vercel.app/api";
+
 document.addEventListener("DOMContentLoaded", () => {
   const token = localStorage.getItem("token")
-  const API_BASE_URL = "http://localhost:3000/api"
 
   // Formulario de entrada
   const formEntrada = document.getElementById("form-entrada")
@@ -8,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
     formEntrada.addEventListener("submit", async (e) => {
       e.preventDefault()
 
-      // Mostrar loading
       const submitBtn = formEntrada.querySelector('button[type="submit"]')
       const originalText = submitBtn.textContent
       submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...'
@@ -45,29 +46,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const result = await response.json()
         console.log("Entrada guardada:", result)
 
-        // Limpiar formulario
         formEntrada.reset()
-
-        // Restablecer fecha actual
         const fechaEntrada = document.getElementById("fecha-entrada")
         if (fechaEntrada) {
           const ahora = new Date()
           fechaEntrada.value = ahora.toISOString().slice(0, 16)
         }
 
-        // Recargar registros
         await cargarRegistros()
-
-        // Mostrar mensaje de éxito
         showMessage("Entrada registrada exitosamente", "success")
-
-        // Scroll hacia la tabla de entradas
         scrollToTable("entradas")
       } catch (error) {
         console.error("Error al guardar entrada:", error)
         showMessage("Error al guardar la entrada: " + error.message, "error")
       } finally {
-        // Restaurar botón
         submitBtn.textContent = originalText
         submitBtn.disabled = false
       }
@@ -80,7 +72,6 @@ document.addEventListener("DOMContentLoaded", () => {
     formSalida.addEventListener("submit", async (e) => {
       e.preventDefault()
 
-      // Mostrar loading
       const submitBtn = formSalida.querySelector('button[type="submit"]')
       const originalText = submitBtn.textContent
       submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...'
@@ -117,29 +108,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const result = await response.json()
         console.log("Salida guardada:", result)
 
-        // Limpiar formulario
         formSalida.reset()
-
-        // Restablecer fecha actual
         const fechaSalida = document.getElementById("fecha-salida")
         if (fechaSalida) {
           const ahora = new Date()
           fechaSalida.value = ahora.toISOString().slice(0, 16)
         }
 
-        // Recargar registros
         await cargarRegistros()
-
-        // Mostrar mensaje de éxito
         showMessage("Salida registrada exitosamente", "success")
-
-        // Scroll hacia la tabla de salidas
         scrollToTable("salidas")
       } catch (error) {
         console.error("Error al guardar salida:", error)
         showMessage("Error al guardar la salida: " + error.message, "error")
       } finally {
-        // Restaurar botón
         submitBtn.textContent = originalText
         submitBtn.disabled = false
       }
@@ -156,7 +138,6 @@ async function cargarRegistros() {
     console.log("Cargando registros...")
 
     const token = localStorage.getItem("token")
-    const API_BASE_URL = "http://localhost:3000/api"
 
     const response = await fetch(`${API_BASE_URL}/registros`, {
       headers: {
@@ -175,11 +156,10 @@ async function cargarRegistros() {
 
     const registros = data.registros || []
 
-    // Separar registros por tipo
     const entradas = registros.filter(reg => reg.tipo === "entrada")
     const salidas = registros.filter(reg => reg.tipo === "salida")
 
-    // Cargar tabla de entradas
+    // Renderizar entradas
     const entradasTbody = document.getElementById("entradas-table-body")
     if (!entradasTbody) {
       console.error("No se encontró el elemento entradas-table-body")
@@ -187,56 +167,35 @@ async function cargarRegistros() {
     }
 
     if (entradas.length === 0) {
-      entradasTbody.innerHTML = `
-        <tr>
-          <td colspan="7" class="sin-registros">
-            No hay entradas registradas
-          </td>
-        </tr>
-      `
+      entradasTbody.innerHTML = `<tr><td colspan="7" class="sin-registros">No hay entradas registradas</td></tr>`
     } else {
-      // Ordenar por fecha más reciente primero
       entradas.sort((a, b) => new Date(b.fechaHora) - new Date(a.fechaHora))
-
-      entradasTbody.innerHTML = entradas
-        .map((reg, index) => {
-          try {
-            // Destacar el registro más reciente
-            const isRecent = index === 0
-            const rowClass = isRecent ? 'style="background-color: #e8f5e8;"' : ""
-
-            return `
-              <tr ${rowClass}>
-                <td><strong>${reg.camion ? reg.camion.camionId : (reg.camionId || "N/A")}</strong></td>
-                <td>${reg.fechaHora ? new Date(reg.fechaHora).toLocaleString("es-ES") : "N/A"}</td>
-                <td>${reg.conductor || "N/A"}</td>
-                <td>
-                  <span class="fuel-type">${reg.tipoPetroleo || reg.combustible || "N/A"}</span>
-                </td>
-                <td><strong>${reg.cantidad || 0} L</strong></td>
-                <td>${reg.origen || "N/A"}</td>
-                <td>
-                  <button class="btn-small btn-danger" onclick="eliminarRegistro(${reg.id})">
-                    <i class="fas fa-trash"></i> Eliminar
-                  </button>
-                </td>
-              </tr>
-            `
-          } catch (error) {
-            console.error("Error formateando registro:", reg, error)
-            return `
-              <tr>
-                <td colspan="7" style="color: red; text-align: center;">
-                  Error al mostrar registro ID: ${reg.id}
-                </td>
-              </tr>
-            `
-          }
-        })
-        .join("")
+      entradasTbody.innerHTML = entradas.map((reg, index) => {
+        try {
+          const isRecent = index === 0
+          const rowClass = isRecent ? 'style="background-color: #e8f5e8;"' : ""
+          return `
+            <tr ${rowClass}>
+              <td><strong>${reg.camion?.camionId || reg.camionId || "N/A"}</strong></td>
+              <td>${reg.fechaHora ? new Date(reg.fechaHora).toLocaleString("es-ES") : "N/A"}</td>
+              <td>${reg.conductor || "N/A"}</td>
+              <td><span class="fuel-type">${reg.tipoPetroleo || reg.combustible || "N/A"}</span></td>
+              <td><strong>${reg.cantidad || 0} L</strong></td>
+              <td>${reg.origen || "N/A"}</td>
+              <td>
+                <button class="btn-small btn-danger" onclick="eliminarRegistro(${reg.id})">
+                  <i class="fas fa-trash"></i> Eliminar
+                </button>
+              </td>
+            </tr>
+          `
+        } catch (error) {
+          return `<tr><td colspan="7" style="color: red;">Error al mostrar registro ID: ${reg.id}</td></tr>`
+        }
+      }).join("")
     }
 
-    // Cargar tabla de salidas
+    // Renderizar salidas
     const salidasTbody = document.getElementById("salidas-table-body")
     if (!salidasTbody) {
       console.error("No se encontró el elemento salidas-table-body")
@@ -244,130 +203,101 @@ async function cargarRegistros() {
     }
 
     if (salidas.length === 0) {
-      salidasTbody.innerHTML = `
-        <tr>
-          <td colspan="7" class="sin-registros">
-            No hay salidas registradas
-          </td>
-        </tr>
-      `
+      salidasTbody.innerHTML = `<tr><td colspan="7" class="sin-registros">No hay salidas registradas</td></tr>`
     } else {
-      // Ordenar por fecha más reciente primero
       salidas.sort((a, b) => new Date(b.fechaHora) - new Date(a.fechaHora))
-
-      salidasTbody.innerHTML = salidas
-        .map((reg, index) => {
-          try {
-            // Destacar el registro más reciente
-            const isRecent = index === 0
-            const rowClass = isRecent ? 'style="background-color: #e6f7ff;"' : "" // Azul claro para salidas
-
-            return `
-              <tr ${rowClass}>
-                <td><strong>${reg.camion ? reg.camion.camionId : (reg.camionId || "N/A")}</strong></td>
-                <td>${reg.fechaHora ? new Date(reg.fechaHora).toLocaleString("es-ES") : "N/A"}</td>
-                <td>${reg.conductor || "N/A"}</td>
-                <td>
-                  <span class="fuel-type">${reg.tipoPetroleo || reg.combustible || "N/A"}</span>
-                </td>
-                <td><strong>${reg.cantidad || 0} L</strong></td>
-                <td>${reg.destino || "N/A"}</td>
-                <td>
-                  <button class="btn-small btn-danger" onclick="eliminarRegistro(${reg.id})">
-                    <i class="fas fa-trash"></i> Eliminar
-                  </button>
-                </td>
-              </tr>
-            `
-          } catch (error) {
-            console.error("Error formateando registro:", reg, error)
-            return `
-              <tr>
-                <td colspan="7" style="color: red; text-align: center;">
-                  Error al mostrar registro ID: ${reg.id}
-                </td>
-              </tr>
-            `
-          }
-        })
-        .join("")
+      salidasTbody.innerHTML = salidas.map((reg, index) => {
+        try {
+          const isRecent = index === 0
+          const rowClass = isRecent ? 'style="background-color: #e6f7ff;"' : ""
+          return `
+            <tr ${rowClass}>
+              <td><strong>${reg.camion?.camionId || reg.camionId || "N/A"}</strong></td>
+              <td>${reg.fechaHora ? new Date(reg.fechaHora).toLocaleString("es-ES") : "N/A"}</td>
+              <td>${reg.conductor || "N/A"}</td>
+              <td><span class="fuel-type">${reg.tipoPetroleo || reg.combustible || "N/A"}</span></td>
+              <td><strong>${reg.cantidad || 0} L</strong></td>
+              <td>${reg.destino || "N/A"}</td>
+              <td>
+                <button class="btn-small btn-danger" onclick="eliminarRegistro(${reg.id})">
+                  <i class="fas fa-trash"></i> Eliminar
+                </button>
+              </td>
+            </tr>
+          `
+        } catch (error) {
+          return `<tr><td colspan="7" style="color: red;">Error al mostrar registro ID: ${reg.id}</td></tr>`
+        }
+      }).join("")
     }
 
     console.log(`${entradas.length} entradas y ${salidas.length} salidas cargadas correctamente`)
   } catch (error) {
     console.error("Error al cargar registros:", error)
 
+    const mensajeError = error.message.includes('Failed to fetch')
+      ? "No se pudo conectar al servidor. Verifica que el backend esté corriendo y que no haya bloqueos (extensiones, firewall)."
+      : error.message
+
     const entradasTbody = document.getElementById("entradas-table-body")
     const salidasTbody = document.getElementById("salidas-table-body")
     
     if (entradasTbody) {
-      entradasTbody.innerHTML = `
-        <tr>
-          <td colspan="7" style="text-align: center; padding: 20px; color: red;">
-            Error al cargar entradas: ${error.message}
-          </td>
-        </tr>
-      `
+      entradasTbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: red;">Error al cargar entradas: ${mensajeError}</td></tr>`
     }
     
     if (salidasTbody) {
-      salidasTbody.innerHTML = `
-        <tr>
-          <td colspan="7" style="text-align: center; padding: 20px; color: red;">
-            Error al cargar salidas: ${error.message}
-          </td>
-        </tr>
-      `
+      salidasTbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: red;">Error al cargar salidas: ${mensajeError}</td></tr>`
     }
 
-    showMessage("Error al cargar registros: " + error.message, "error")
+    showMessage("Error al cargar registros: " + mensajeError, "error")
   }
 }
 
-// Función para hacer scroll hacia la tabla específica
 function scrollToTable(tipo) {
   setTimeout(() => {
-    const tableSection = document.querySelector(`#${tipo}-table-body`).closest('.tabla-contenedor');
+    const tableSection = document.querySelector(`#${tipo}-table-body`).closest('.tabla-contenedor')
     if (tableSection) {
-      tableSection.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      })
+      tableSection.scrollIntoView({ behavior: "smooth", block: "nearest" })
     }
   }, 500)
 }
 
-// Función para eliminar registros
+// Función para eliminar registros (también usa la misma base URL)
 async function eliminarRegistro(id) {
   if (!confirm("¿Está seguro de que desea eliminar este registro? Esta acción no se puede deshacer.")) {
-    return;
+    return
   }
 
-  const token = localStorage.getItem("token");
-  const API_BASE_URL = "http://localhost:3000/api";
+  const token = localStorage.getItem("token")
 
- try {
-  const response = await fetch(`${API_BASE_URL}/registros`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  // ...
-} catch (error) {
-  if (error.message.includes('Failed to fetch')) {
-    console.error('❌ No se pudo conectar al servidor. Verifica que el backend esté corriendo y que no haya bloqueos.');
-    showMessage('No se pudo conectar al servidor. Revisa tu conexión o extensiones.', 'error');
-  } else {
-    console.error('Error:', error);
-    showMessage('Error al cargar registros: ' + error.message, 'error');
+  try {
+    const response = await fetch(`${API_BASE_URL}/registros/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`)
+    }
+
+    const result = await response.json()
+    console.log("Registro eliminado:", result)
+    showMessage("Registro eliminado exitosamente", "success")
+    await cargarRegistros()
+  } catch (error) {
+    console.error("Error al eliminar registro:", error)
+    showMessage("Error al eliminar el registro: " + error.message, "error")
   }
 }
-}
-// Función para mostrar mensajes
+
 function showMessage(message, type = "info") {
-  // Remover mensajes anteriores
   const existingMessages = document.querySelectorAll(".floating-message")
   existingMessages.forEach((msg) => msg.remove())
 
-  // Crear elemento de mensaje
   const messageDiv = document.createElement("div")
   messageDiv.className = `floating-message message-${type}`
   messageDiv.innerHTML = `
@@ -377,7 +307,6 @@ function showMessage(message, type = "info") {
     </div>
   `
 
-  // Agregar estilos
   messageDiv.style.cssText = `
     position: fixed;
     top: 20px;
@@ -392,7 +321,6 @@ function showMessage(message, type = "info") {
     animation: slideIn 0.3s ease-out;
   `
 
-  // Colores según el tipo
   if (type === "success") {
     messageDiv.style.backgroundColor = "#4caf50"
   } else if (type === "error") {
@@ -401,7 +329,6 @@ function showMessage(message, type = "info") {
     messageDiv.style.backgroundColor = "#2196f3"
   }
 
-  // Agregar animación CSS
   if (!document.getElementById("message-styles")) {
     const style = document.createElement("style")
     style.id = "message-styles"
@@ -443,10 +370,8 @@ function showMessage(message, type = "info") {
     document.head.appendChild(style)
   }
 
-  // Agregar al DOM
   document.body.appendChild(messageDiv)
 
-  // Remover después de 5 segundos
   setTimeout(() => {
     if (messageDiv.parentNode) {
       messageDiv.style.animation = "slideIn 0.3s ease-out reverse"
