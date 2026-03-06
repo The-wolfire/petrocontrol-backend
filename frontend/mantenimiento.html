@@ -788,7 +788,7 @@
         }
 
         const user = AuthManager.getCurrentUser();
-        console.log("Usuario actual:", user); // ← Verás el role aquí
+        console.log("Usuario actual:", user);
 
         const userNameElement = document.getElementById("user-name");
         if (userNameElement) {
@@ -796,21 +796,13 @@
         }
 
         try {
-            // Carga específica
             if (typeof cargarMantenimientos === "function") await cargarMantenimientos();
             if (typeof cargarCamioneros === "function") await cargarCamioneros();
-
             console.log("Datos cargados correctamente");
         } catch (error) {
             console.error("Error detallado del backend:", error.message);
-
-            // Muestra el error real del backend
-            alert("Error del servidor: " + error.message);
-
-            // Solo redirige si es sesión expirada o token inválido
-            if (error.message.includes("401") || error.message.includes("autorizado") || error.message.includes("expirada")) {
-                AuthManager.redirectToLogin();
-            }
+            alert("Error del servidor: " + error.message); // Muestra error real
+            // QUITAMOS redirect – no vuelve a pasar
         }
     });
 </script>
