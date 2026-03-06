@@ -8,7 +8,7 @@ import { RegistroES } from "../entities/RegistroES"
 import { Camionero } from "../entities/Camionero"
 import { Mantenimiento } from "../entities/Mantenimiento"
 import { Viaje } from "../entities/Viaje"
-
+  
 dotenv.config()
 
 const isProduction = process.env.NODE_ENV === "production"
@@ -27,13 +27,14 @@ export const AppDataSource = new DataSource({
   password: !isProduction ? process.env.DB_PASSWORD : undefined,
   database: !isProduction ? process.env.DB_NAME : undefined,
 
-  // ←←← TEMPORAL: Creamos las tablas automáticamente
-  synchronize: !isProduction,
+  // ⚠️ TEMPORAL: Forzar sincronización para crear tablas en producción
+  // Después del primer despliegue, cambiar a: synchronize: !isProduction
+  synchronize: true, // Ahora se crean las tablas en producción
 
   // Desactivamos logging en producción para no llenar logs
   logging: !isProduction,
 
-  // ←←← Aquí están las entidades reales (esto era el error principal)
+  // Entidades
   entities: [
     Usuario,
     Camion,

@@ -14,7 +14,7 @@
 </head>
 <body>
     <div class="dashboard-container">
-        <!-- Sidebar -->
+        <!-- Sidebar (sin cambios) -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <i class="fas fa-gas-pump"></i>
@@ -22,48 +22,13 @@
             </div>
             <nav class="sidebar-nav">
                 <ul>
-                    <li>
-                        <a href="dashboard.html">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Panel</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="registro.html">
-                            <i class="fas fa-clipboard-list"></i>
-                            <span>Registro E/S</span>
-                        </a>
-                    </li>
-                    <li class="active">
-                        <a href="inventario.html">
-                            <i class="fas fa-warehouse"></i>
-                            <span>Inventario</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="camiones.html">
-                            <i class="fas fa-truck"></i>
-                            <span>Camiones</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="mantenimiento.html">
-                            <i class="fas fa-tools"></i>
-                            <span>Mantenimiento</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="camioneros.html">
-                            <i class="fas fa-users"></i>
-                            <span>Camioneros</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" onclick="logout()">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Cerrar Sesión</span>
-                        </a>
-                    </li>
+                    <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i><span>Panel</span></a></li>
+                    <li><a href="registro.html"><i class="fas fa-clipboard-list"></i><span>Registro E/S</span></a></li>
+                    <li class="active"><a href="inventario.html"><i class="fas fa-warehouse"></i><span>Inventario</span></a></li>
+                    <li><a href="camiones.html"><i class="fas fa-truck"></i><span>Camiones</span></a></li>
+                    <li><a href="mantenimiento.html"><i class="fas fa-tools"></i><span>Mantenimiento</span></a></li>
+                    <li><a href="camioneros.html"><i class="fas fa-users"></i><span>Camioneros</span></a></li>
+                    <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a></li>
                 </ul>
             </nav>
         </div>
@@ -134,7 +99,9 @@
     <script>
         // Variables globales
         let inventoryChart = null;
-        const API_BASE_URL = "http://localhost:3000/api";
+        // Usar la URL definida en config.js (window.API_BASE_URL) o la de producción por defecto
+        const API_BASE_URL = window.API_BASE_URL || "https://petrocontrol-backend.vercel.app/api";
+        console.log('🔗 API Base URL:', API_BASE_URL);
 
         // AUTENTICACIÓN
         document.addEventListener('DOMContentLoaded', function() {
@@ -237,6 +204,7 @@
                         <i class="fas fa-info-circle"></i>
                         <p>No hay datos de inventario disponibles</p>
                         <p><small>Registra algunas entradas y salidas para ver el inventario</small></p>
+                        <p><small>Error: ${error.message}</small></p>
                     </div>
                 `;
             }
@@ -283,7 +251,7 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="6" style="text-align: center; padding: 20px; color: #666;">
-                            📋 No hay movimientos recientes
+                            📋 No hay movimientos recientes (Error: ${error.message})
                         </td>
                     </tr>
                 `;
@@ -512,7 +480,7 @@
         }
     </script>
 
-    <!-- Estilos adicionales para inventario -->
+    <!-- Estilos adicionales para inventario (sin cambios) -->
     <style>
         .inventory-summary {
             display: grid;
