@@ -2,9 +2,11 @@ import type { Request, Response } from "express"
 import { AppDataSource } from "../config/data-source"
 import { RegistroES } from "../entities/RegistroES"
 import { Camion } from "../entities/Camion"
+import { Camionero } from "../entities/Camionero" // Importamos Camionero
 
 const registroRepository = AppDataSource.getRepository(RegistroES)
 const camionRepository = AppDataSource.getRepository(Camion)
+const camioneroRepository = AppDataSource.getRepository(Camionero) // Repositorio de camioneros
 
 // ✅ GET Registros
 export const getRegistros = async (req: Request, res: Response) => {
@@ -76,13 +78,14 @@ export const getRegistroById = async (req: Request, res: Response) => {
   }
 }
 
-// ✅ POST Crear Registro
+// ✅ POST Crear Registro (modificado para actualizar ultimoViaje del camionero)
 export const createRegistro = async (req: Request, res: Response) => {
   try {
     console.log("📝 [Registros] POST /api/registros")
 
-    const { camionId, conductor, fechaHora, tipoPetroleo, cantidad, tipo, origen, destino, observaciones } = req.body
+    const { camionId, conductor, conductorId, fechaHora, tipoPetroleo, cantidad, tipo, origen, destino, observaciones } = req.body
 
+    // Validaciones
     if (!camionId || !conductor || !tipoPetroleo || !cantidad || !tipo) {
       return res.status(400).json({
         success: false,
@@ -109,6 +112,7 @@ export const createRegistro = async (req: Request, res: Response) => {
       })
     }
 
+    // Crear el registro
     const registro = registroRepository.create({
       camionId: camion.camionId,
       conductor,
@@ -123,6 +127,21 @@ export const createRegistro = async (req: Request, res: Response) => {
 
     const savedRegistro = await registroRepository.save(registro)
 
+    // Si es una entrada y se proporcionó conductorId, actualizar el último viaje del camionero
+    if (tipo === "entrada" && conductorId) {
+      const camionero = await camioneroRepository.findOne({
+        where: { id: Number.parseInt(String(conductorId)) },
+      })
+      if (camionero) {
+        camionero.ultimoViaje = registro.fechaHora
+        await camioneroRepository.save(camionero)
+        console.log(`✅ [Registros] Último viaje actualizado para camionero ID ${conductorId}`)
+      } else {
+        console.warn(`⚠️ [Registros] No se encontró camionero con ID ${conductorId}`)
+      }
+    }
+
+    // Obtener el registro completo con relaciones
     const registroCompleto = await registroRepository.findOne({
       where: { id: savedRegistro.id },
       relations: ["camion"],

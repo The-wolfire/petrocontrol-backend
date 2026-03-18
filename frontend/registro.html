@@ -6,8 +6,7 @@
     <title>PetroControl | Registro E/S</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <!-- Orden correcto -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <script src="config.js"></script>
     <script src="auth.js"></script>
     <script src="api.js"></script>
@@ -33,7 +32,7 @@
             border-left: 4px solid #28a745;
         }
         .tabla-titulo.salida {
-            color: #007bff; /* Cambiado de rojo a azul */
+            color: #007bff;
             border-left: 4px solid #007bff;
         }
         .badge-entrada {
@@ -44,7 +43,7 @@
             font-size: 12px;
         }
         .badge-salida {
-            background-color: #007bff; /* Cambiado de rojo a azul */
+            background-color: #007bff;
             color: white;
             padding: 3px 8px;
             border-radius: 4px;
@@ -83,48 +82,13 @@
             </div>
             <nav class="sidebar-nav">
                 <ul>
-                    <li>
-                        <a href="dashboard.html">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <span>Panel</span>
-                        </a>
-                    </li>
-                    <li class="active">
-                        <a href="registro.html">
-                            <i class="fas fa-clipboard-list"></i>
-                            <span>Registro E/S</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="inventario.html">
-                            <i class="fas fa-warehouse"></i>
-                            <span>Inventario</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="camiones.html">
-                            <i class="fas fa-truck"></i>
-                            <span>Camiones</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="mantenimiento.html">
-                            <i class="fas fa-tools"></i>
-                            <span>Mantenimiento</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="camioneros.html">
-                            <i class="fas fa-users"></i>
-                            <span>Camioneros</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" onclick="logout()">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Cerrar Sesión</span>
-                        </a>
-                    </li>
+                    <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i><span>Panel</span></a></li>
+                    <li class="active"><a href="registro.html"><i class="fas fa-clipboard-list"></i><span>Registro E/S</span></a></li>
+                    <li><a href="inventario.html"><i class="fas fa-warehouse"></i><span>Inventario</span></a></li>
+                    <li><a href="camiones.html"><i class="fas fa-truck"></i><span>Camiones</span></a></li>
+                    <li><a href="mantenimiento.html"><i class="fas fa-tools"></i><span>Mantenimiento</span></a></li>
+                    <li><a href="camioneros.html"><i class="fas fa-users"></i><span>Camioneros</span></a></li>
+                    <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a></li>
                 </ul>
             </nav>
         </div>
@@ -165,7 +129,9 @@
                                 <label for="conductor-entrada">
                                     <i class="fas fa-user"></i> Conductor:
                                 </label>
-                                <input type="text" id="conductor-entrada" placeholder="Nombre del conductor" required>
+                                <select id="conductor-entrada" required>
+                                    <option value="">Seleccionar conductor...</option>
+                                </select>
                             </div>
                         </div>
                         
@@ -357,87 +323,42 @@
         </div>
     </div>
 
-    <!-- Cargar el JavaScript al final -->
+    <!-- Scripts -->
     <script>
-        // Verificar autenticación primero
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Página de registro cargada');
-            
             const token = localStorage.getItem("token");
-            console.log('🔑 Token encontrado:', token ? 'Sí' : 'No');
-            
             if (!token) {
-                console.log('❌ No hay token, redirigiendo al login');
                 alert("No estás autenticado. Redirigiendo al login...");
                 window.location.href = "index.html";
                 return;
             }
-            
-            console.log('✅ Token válido, usuario autenticado');
-            
-            // Decodificar token para obtener info del usuario
+
+            // Mostrar nombre de usuario
             try {
-                const decoded = JSON.parse(atob(token.split('.')[1] || atob(token)));
-                console.log('👤 Usuario decodificado:', decoded);
-                
+                const decoded = JSON.parse(atob(token.split('.')[1]));
                 const userNameElement = document.getElementById('user-name');
-                if (userNameElement) {
-                    userNameElement.textContent = decoded.username || 'Usuario';
-                }
+                if (userNameElement) userNameElement.textContent = decoded.username || 'Usuario';
             } catch (error) {
-                console.error('❌ Error decodificando token:', error);
-                // Intentar decodificar sin split para tokens no estándar
-                try {
-                    const decoded = JSON.parse(atob(token));
-                    console.log('👤 Usuario decodificado (formato alternativo):', decoded);
-                    
-                    const userNameElement = document.getElementById('user-name');
-                    if (userNameElement) {
-                        userNameElement.textContent = decoded.username || 'Usuario';
-                    }
-                } catch (error2) {
-                    console.error('❌ Error decodificando token (formato alternativo):', error2);
-                    localStorage.removeItem('token');
-                    window.location.href = 'index.html';
-                    return;
-                }
+                console.warn("No se pudo decodificar el token");
             }
 
-            // Inicializar la página
             inicializarFormulariosRegistro();
             establecerFechaActual();
         });
 
         function logout() {
-            console.log('🚪 Cerrando sesión');
             localStorage.removeItem('token');
             window.location.href = 'index.html';
         }
 
         function inicializarFormulariosRegistro() {
-            console.log('🔧 Inicializando formularios de registro');
-            
-            // Tabs de formularios
             const formTabs = document.querySelectorAll('.form-tab');
-            
             formTabs.forEach(tab => {
                 tab.addEventListener('click', function() {
-                    console.log('📋 Cambiando a tab:', this.getAttribute('data-tab'));
-                    
-                    // Remover clase active de todos los tabs
                     formTabs.forEach(t => t.classList.remove('active'));
-                    
-                    // Agregar clase active al tab clickeado
                     this.classList.add('active');
-                    
-                    // Mostrar el contenido correspondiente
                     const tabId = this.getAttribute('data-tab');
-                    const tabContents = document.querySelectorAll('.tab-content');
-                    
-                    tabContents.forEach(content => {
-                        content.classList.remove('active');
-                    });
-                    
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                     document.getElementById(tabId).classList.add('active');
                 });
             });
@@ -446,20 +367,12 @@
         function establecerFechaActual() {
             const fechaEntrada = document.getElementById('fecha-entrada');
             const fechaSalida = document.getElementById('fecha-salida');
-            
-            if (fechaEntrada && fechaSalida) {
-                const ahora = new Date();
-                const fechaFormateada = ahora.toISOString().slice(0, 16);
-                
-                fechaEntrada.value = fechaFormateada;
-                fechaSalida.value = fechaFormateada;
-                
-                console.log('Fecha actual establecida:', fechaFormateada);
-            }
+            const ahora = new Date();
+            const fechaFormateada = ahora.toISOString().slice(0, 16);
+            if (fechaEntrada) fechaEntrada.value = fechaFormateada;
+            if (fechaSalida) fechaSalida.value = fechaFormateada;
         }
     </script>
-    
-    <!-- Cargar el script de registro al final -->
     <script src="registro.js"></script>
 </body>
 </html>

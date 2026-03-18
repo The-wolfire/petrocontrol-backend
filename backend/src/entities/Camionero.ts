@@ -6,6 +6,9 @@ export class Camionero {
   @PrimaryGeneratedColumn()
   id!: number
 
+  @Column({ type: 'timestamp', nullable: true })
+ultimoViaje!: Date | null; 
+
   @Column({ type: "varchar" })
   nombre!: string
 
