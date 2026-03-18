@@ -114,155 +114,78 @@
                     </button>
                 </div>
                 
-                <!-- Formulario de Entrada -->
-                <div id="entrada-form" class="tab-content active">
-                    <h3><i class="fas fa-truck"></i> Registro de Entrada</h3>
-                    <form id="form-entrada">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="camion-id-entrada">
-                                    <i class="fas fa-truck"></i> ID del Camión:
-                                </label>
-                                <input type="text" id="camion-id-entrada" placeholder="Ej: C-103" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="conductor-entrada">
-                                    <i class="fas fa-user"></i> Conductor:
-                                </label>
-                                <select id="conductor-entrada" required>
-                                    <option value="">Seleccionar conductor...</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="fecha-entrada">
-                                    <i class="fas fa-calendar"></i> Fecha y Hora:
-                                </label>
-                                <input type="datetime-local" id="fecha-entrada" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="tipo-petroleo-entrada">
-                                    <i class="fas fa-oil-can"></i> Tipo de Petróleo:
-                                </label>
-                                <select id="tipo-petroleo-entrada" required>
-                                    <option value="">Seleccionar...</option>
-                                    <option value="crudo">Crudo</option>
-                                    <option value="refinado">Refinado</option>
-                                    <option value="diesel">Diesel</option>
-                                    <option value="gasolina">Gasolina</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="cantidad-entrada">
-                                    <i class="fas fa-tachometer-alt"></i> Cantidad (Litros):
-                                </label>
-                                <input type="number" id="cantidad-entrada" min="0" step="0.01" placeholder="Ej: 1200.50" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="origen-entrada">
-                                    <i class="fas fa-map-marker-alt"></i> Origen:
-                                </label>
-                                <input type="text" id="origen-entrada" placeholder="Lugar de origen" required>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="observaciones-entrada">
-                                <i class="fas fa-comment"></i> Observaciones:
-                            </label>
-                            <textarea id="observaciones-entrada" placeholder="Observaciones adicionales" rows="3"></textarea>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="reset" class="btn-secondary">
-                                <i class="fas fa-eraser"></i> Limpiar
-                            </button>
-                            <button type="submit" class="btn-primary">
-                                <i class="fas fa-save"></i> Registrar Entrada
-                            </button>
-                        </div>
-                    </form>
-                </div>
-                
-                <!-- Formulario de Salida -->
-                <div id="salida-form" class="tab-content">
-                    <h3><i class="fas fa-truck"></i> Registro de Salida</h3>
-                    <form id="form-salida">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="camion-id-salida">
-                                    <i class="fas fa-truck"></i> ID del Camión:
-                                </label>
-                                <input type="text" id="camion-id-salida" placeholder="Ej: C-087" required>
-                            </div>
-                             <div class="form-group">
-                                <label for="conductor-entrada">
-                                    <i class="fas fa-user"></i> Conductor:
-                                </label>
-                                <select id="conductor-entrada" required>
-                                    <option value="">Seleccionar conductor...</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="fecha-salida">
-                                    <i class="fas fa-calendar"></i> Fecha y Hora:
-                                </label>
-                                <input type="datetime-local" id="fecha-salida" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="tipo-petroleo-salida">
-                                    <i class="fas fa-oil-can"></i> Tipo de Petróleo:
-                                </label>
-                                <select id="tipo-petroleo-salida" required>
-                                    <option value="">Seleccionar...</option>
-                                    <option value="crudo">Crudo</option>
-                                    <option value="refinado">Refinado</option>
-                                    <option value="diesel">Diesel</option>
-                                    <option value="gasolina">Gasolina</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="cantidad-salida">
-                                    <i class="fas fa-tachometer-alt"></i> Cantidad (Litros):
-                                </label>
-                                <input type="number" id="cantidad-salida" min="0" step="0.01" placeholder="Ej: 950.75" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="destino-salida">
-                                    <i class="fas fa-map-marker-alt"></i> Destino:
-                                </label>
-                                <input type="text" id="destino-salida" placeholder="Lugar de destino" required>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="observaciones-salida">
-                                <i class="fas fa-comment"></i> Observaciones:
-                            </label>
-                            <textarea id="observaciones-salida" placeholder="Observaciones adicionales" rows="3"></textarea>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="reset" class="btn-secondary">
-                                <i class="fas fa-eraser"></i> Limpiar
-                            </button>
-                            <button type="submit" class="btn-primary">
-                                <i class="fas fa-save"></i> Registrar Salida
-                            </button>
-                        </div>
-                    </form>
-                </div>
+               <!-- Formulario de Salida -->
+<div id="salida-form" class="tab-content">
+    <h3><i class="fas fa-truck"></i> Registro de Salida</h3>
+    <form id="form-salida">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="camion-id-salida">
+                    <i class="fas fa-truck"></i> ID del Camión:
+                </label>
+                <input type="text" id="camion-id-salida" placeholder="Ej: C-087" required>
+            </div>
+            <div class="form-group">
+                <label for="conductor-salida">
+                    <i class="fas fa-user"></i> Conductor:
+                </label>
+                <input type="text" id="conductor-salida" placeholder="Nombre del conductor" required>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="fecha-salida">
+                    <i class="fas fa-calendar"></i> Fecha y Hora:
+                </label>
+                <input type="datetime-local" id="fecha-salida" required>
+            </div>
+            <div class="form-group">
+                <label for="tipo-petroleo-salida">
+                    <i class="fas fa-oil-can"></i> Tipo de Petróleo:
+                </label>
+                <select id="tipo-petroleo-salida" required>
+                    <option value="">Seleccionar...</option>
+                    <option value="crudo">Crudo</option>
+                    <option value="refinado">Refinado</option>
+                    <option value="diesel">Diesel</option>
+                    <option value="gasolina">Gasolina</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="cantidad-salida">
+                    <i class="fas fa-tachometer-alt"></i> Cantidad (Litros):
+                </label>
+                <input type="number" id="cantidad-salida" min="0" step="0.01" placeholder="Ej: 950.75" required>
+            </div>
+            <div class="form-group">
+                <label for="destino-salida">
+                    <i class="fas fa-map-marker-alt"></i> Destino:
+                </label>
+                <input type="text" id="destino-salida" placeholder="Lugar de destino" required>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="observaciones-salida">
+                <i class="fas fa-comment"></i> Observaciones:
+            </label>
+            <textarea id="observaciones-salida" placeholder="Observaciones adicionales" rows="3"></textarea>
+        </div>
+        
+        <div class="form-actions">
+            <button type="reset" class="btn-secondary">
+                <i class="fas fa-eraser"></i> Limpiar
+            </button>
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-save"></i> Registrar Salida
+            </button>
+        </div>
+    </form>
+</div>
                 
                 <!-- Tabla de registros de entrada -->
                 <div class="tabla-contenedor">
