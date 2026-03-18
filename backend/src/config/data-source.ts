@@ -29,7 +29,7 @@ export const AppDataSource = new DataSource({
   password: !process.env.POSTGRES_URL ? process.env.DB_PASSWORD : undefined,
   database: !process.env.POSTGRES_URL ? process.env.DB_NAME : undefined,
 
-  synchronize: true,  // en desarrollo sincroniza, en producción no
+  synchronize: !isProduction,  // en desarrollo sincroniza, en producción no
   logging: !isProduction,
   entities: [
     Usuario,
