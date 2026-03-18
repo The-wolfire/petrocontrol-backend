@@ -197,6 +197,8 @@
 
     <script>
         let mantenimientoCompletando = null;
+        // Definir baseUrl usando window.API_BASE_URL o un fallback a producción
+        const baseUrl = window.API_BASE_URL || 'https://petrocontrol-backend.vercel.app/api';
 
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Página de mantenimiento cargada');
@@ -248,7 +250,7 @@
                 const headers = {};
                 if (token) headers['Authorization'] = `Bearer ${token}`;
 
-                const response = await fetch('http://localhost:3000/api/mantenimientos', { headers });
+                const response = await fetch(`${baseUrl}/mantenimientos`, { headers });
                 if (!response.ok) throw new Error(`Error ${response.status}`);
 
                 const data = await response.json();
@@ -267,7 +269,7 @@
                 const headers = {};
                 if (token) headers['Authorization'] = `Bearer ${token}`;
 
-                const response = await fetch('http://localhost:3000/api/camiones', { headers });
+                const response = await fetch(`${baseUrl}/camiones`, { headers });
                 if (!response.ok) throw new Error(`Error ${response.status}`);
 
                 const data = await response.json();
@@ -382,7 +384,7 @@
                     observaciones: document.getElementById('observaciones-mant').value
                 };
 
-                const response = await fetch('http://localhost:3000/api/mantenimientos', {
+                const response = await fetch(`${baseUrl}/mantenimientos`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -426,7 +428,7 @@
                     observaciones: document.getElementById('observaciones-final').value
                 };
 
-                const response = await fetch(`http://localhost:3000/api/mantenimientos/${mantenimientoCompletando}/completar`, {
+                const response = await fetch(`${baseUrl}/mantenimientos/${mantenimientoCompletando}/completar`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -482,7 +484,7 @@
         }
     </script>
 
-    <!-- Estilos finales (corregidos) -->
+    <!-- Estilos finales -->
     <style>
         .btn-success { background: #4caf50; }
         .btn-success:hover { background: #45a049; }
