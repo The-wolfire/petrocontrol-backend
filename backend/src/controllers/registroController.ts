@@ -2,11 +2,11 @@ import type { Request, Response } from "express"
 import { AppDataSource } from "../config/data-source"
 import { RegistroES } from "../entities/RegistroES"
 import { Camion } from "../entities/Camion"
-import { Camionero } from "../entities/Camionero" // Importamos Camionero
+import { Camionero } from "../entities/Camionero" // ← Importamos Camionero
 
 const registroRepository = AppDataSource.getRepository(RegistroES)
 const camionRepository = AppDataSource.getRepository(Camion)
-const camioneroRepository = AppDataSource.getRepository(Camionero) // Repositorio de camioneros
+const camioneroRepository = AppDataSource.getRepository(Camionero) // ← Repositorio de camioneros
 
 // ✅ GET Registros
 export const getRegistros = async (req: Request, res: Response) => {
@@ -127,7 +127,7 @@ export const createRegistro = async (req: Request, res: Response) => {
 
     const savedRegistro = await registroRepository.save(registro)
 
-    // Si es una entrada y se proporcionó conductorId, actualizar el último viaje del camionero
+    // 🔁 Si es una entrada y se proporcionó conductorId, actualizar el último viaje del camionero
     if (tipo === "entrada" && conductorId) {
       const camionero = await camioneroRepository.findOne({
         where: { id: Number.parseInt(String(conductorId)) },
