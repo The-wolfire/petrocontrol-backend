@@ -1097,7 +1097,118 @@ textarea {
 
 /* ========== MEDIA QUERIES (MÓVIL) ========== */
 @media (max-width: 768px) {
-  /* Sidebar colapsado */
+  /* ========== MEJORAS DE LEGIBILIDAD ========== */
+
+  /* Aumentar tamaño de fuente base para mejor lectura */
+  body {
+    font-size: 16px;
+  }
+
+  /* Hacer que el contenido principal ocupe todo el ancho */
+  .main-content {
+    margin-left: 70px;
+    padding: 10px;
+    width: calc(100% - 70px);
+  }
+
+  /* Ajustar el header para que no sea tan alto */
+  .main-header {
+    padding: 10px 12px;
+  }
+  .main-header h1 {
+    font-size: 1.3rem;
+  }
+
+  /* Tarjetas de estadísticas: que ocupen todo el ancho */
+  .stats-grid {
+    gap: 10px;
+  }
+  .stat-card {
+    padding: 15px;
+  }
+  .stat-card i {
+    font-size: 2rem;
+  }
+  .stat-info h3 {
+    font-size: 1rem;
+  }
+  .stat-number {
+    font-size: 1.6rem;
+  }
+
+  /* Botones de acción rápida: que ocupen ancho completo y se apilen */
+  .action-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .btn-action {
+    width: 100%;
+    justify-content: center;
+    padding: 15px;
+  }
+
+  /* Formularios: inputs más grandes y cómodos */
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 14px 16px;
+    font-size: 16px; /* evitar zoom automático en iOS */
+  }
+  .form-tab {
+    font-size: 14px;
+    padding: 12px 5px;
+  }
+
+  /* Tablas convertidas a tarjetas: ajustar espaciado */
+  .data-table tr {
+    padding: 15px;
+    margin-bottom: 12px;
+  }
+  .data-table td {
+    padding: 6px 0;
+    font-size: 15px;
+  }
+  .data-table td:before {
+    font-size: 14px;
+  }
+
+  /* Inventario: tarjetas más compactas */
+  .inventory-summary {
+    gap: 15px;
+  }
+  .inventory-card {
+    padding: 15px;
+  }
+  .inventory-amount {
+    font-size: 1.8rem;
+  }
+
+  /* Gráfico: reducir altura para que no domine la pantalla */
+  .chart-container {
+    height: 250px;
+    padding: 10px;
+  }
+
+  /* Alertas: mejor espaciado */
+  .alert-item {
+    padding: 12px;
+  }
+
+  /* Evitar desbordamientos horizontales */
+  body {
+    overflow-x: hidden;
+  }
+  .dashboard-container {
+    overflow-x: hidden;
+  }
+
+  /* Ajustar campo de búsqueda en móvil */
+  .header-search {
+    width: 100%;
+    max-width: 250px;
+  }
+
+  /* Sidebar colapsado - mantener estilos previos */
   .sidebar {
     width: 70px;
   }
@@ -1113,63 +1224,19 @@ textarea {
     display: block;
   }
 
-  /* Main content */
-  .main-content {
-    margin-left: 70px;
-    padding: 15px;
-  }
-
-  /* Tablas → tarjetas */
-  .data-table thead {
-    display: none;
-  }
-  .data-table tr {
-    display: block;
-    margin-bottom: 15px;
-    background: white;
-    border-radius: 12px;
-    padding: 15px;
-    box-shadow: 0 4px 15px var(--shadow-color);
-  }
-  .data-table td {
-    display: block;
-    text-align: right;
-    border: none;
-    padding: 8px 0;
-  }
-  .data-table td:before {
-    content: attr(data-label);
-    float: left;
-    font-weight: 600;
-    color: var(--primary-color);
-  }
-
-  /* Modales full screen */
-  .modal-content {
-    width: 95%;
-    max-width: none;
-    height: 95vh;
-    border-radius: 0;
-    margin: 0;
-  }
-
-  /* Grids a una columna */
+  /* Grids a una columna (ya existían, pero se aseguran) */
   .stats-grid,
   .charts-container,
   .camiones-grid {
     grid-template-columns: 1fr;
   }
 
-  /* Ajustes de formularios */
+  /* Ajustes de formularios (ya existían) */
   .form-row {
     grid-template-columns: 1fr;
     gap: 15px;
   }
   .form-actions {
     flex-direction: column;
-  }
-  .form-tab {
-    font-size: 14px;
-    padding: 12px 15px;
   }
 }
